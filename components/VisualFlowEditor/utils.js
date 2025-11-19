@@ -39,14 +39,20 @@ export function convertToReactFlow(currentFlow, savedPositions = {}) {
   currentFlow.nodes.forEach((node, index) => {
     const nodeId = node.name || node.id;
     
-    // ✅ CRITICAL: Try to restore saved position, fallback to calculated position
+    // ✅ CRITICAL: Try to restore position from multiple sources (priority order):
+    // 1. Backend meta.position (persists across devices)
+    // 2. localStorage savedPositions (local backup)
+    // 3. Calculated fallback position
+    const backendPos = node.meta?.position;
     const savedPos = savedPositions[nodeId];
-    const position = savedPos 
-      ? { x: savedPos.x, y: savedPos.y }
-      : {
-          x: 100 + (index % 3) * 250,
-          y: 100 + Math.floor(index / 3) * 200,
-        };
+    const position = backendPos 
+      ? { x: backendPos.x, y: backendPos.y }
+      : savedPos 
+        ? { x: savedPos.x, y: savedPos.y }
+        : {
+            x: 30 + (index % 3) * 160,
+            y: 30 + Math.floor(index / 3) * 130,
+          };
 
     const reactFlowNode = {
       id: `reactflow_${nodeId}`,
@@ -105,8 +111,13 @@ export function convertFromReactFlow(nodes, edges, initialNodeId) {
         ],
         functions: node.data.functions || [],
         respond_immediately: node.data.respond_immediately !== false,
-        meta: {},
-        // ✅ NO position data included - keeps your schema clean
+        meta: {
+          // ✅ Include position data in meta so it persists in backend
+          position: {
+            x: Math.round(node.position?.x || 0),
+            y: Math.round(node.position?.y || 0)
+          }
+        },
       };
       currentNodes.push(currentNode);
     }

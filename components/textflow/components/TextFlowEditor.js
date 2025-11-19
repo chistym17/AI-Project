@@ -1,12 +1,12 @@
 // components/textflow/components/TextFlowEditor.js - WITH AI CHAT + UCG FEATURE
-import React, { useCallback, useEffect, useState, useRef } from "react";
-import ReactFlow, { Background, Controls, MiniMap, addEdge, useEdgesState, useNodesState } from "reactflow";
+import React, { useCallback, useEffect, useState, useRef, useMemo } from "react";
+import { useRouter } from "next/router";
+import ReactFlow, { Background, Controls, addEdge, useEdgesState, useNodesState, ConnectionLineType, useReactFlow, ReactFlowProvider } from "reactflow";
 import "reactflow/dist/style.css";
 import { nodeTypes } from "../nodes/index.js";
 import { useTextflowStore } from "../hooks/useTextflowStore.js";
 import { saveTextFlow, getTextFlow } from "../api/textflowApi.js";
 import { useWebSocketStream } from "../hooks/useWebSocketStream.js";
-import NodeSidebar from "./NodeSidebar.js";
 import ConfigPanel from "./ConfigPanel.js";
 import ConsolePanel from "./ConsolePanel.js";
 import TriggerManager from "./TriggerManager.js";
@@ -14,19 +14,56 @@ import TemplateGallery from "./TemplateGallery.js";
 import ComponentLibraryPanel from "./ComponentLibraryPanel.js";
 import FlowChatbotPanel from "./FlowChatbotPanel.js";
 import ConnectorPanel from "./ConnectorPanel.js";
-import { Play, Save, Layers, Zap, Download, Upload, Key, Activity, Settings, Sparkles, Package, AlertCircle, CheckCircle, GripHorizontal, Bot, MessageSquare, Plug } from "lucide-react";
+import { Play, Save, Layers, Zap, Download, Upload, Key, Activity, Settings, Sparkles, Package, AlertCircle, CheckCircle, GripHorizontal, Bot, MessageSquare, Plug, Target, Globe, Brain, GitBranch, Clock, FileText, ArrowLeft, Search, X } from "lucide-react";
 
-export default function TextFlowEditor({ assistantId }) {
+const MINIBAR_ICONS = {
+  components: "/textflow-icons/textflow_btn_1.png",
+  templates: "/textflow-icons/textflow_btn_2.png",
+  subflows: "/textflow-icons/textflow_btn_3.png",
+  connectors: "/textflow-icons/textflow_btn_4.png",
+  triggers: "/textflow-icons/textflow_btn_5.png",
+  console: "/textflow-icons/textflow_btn_6.png",
+  aiDefault: "/textflow-icons/textflow_btn_hover.png",
+  aiActive: "/textflow-icons/textflow_btn_hover.png",
+};
+
+const COMPONENT_OPTIONS = [
+  { type: "start", label: "Start", description: "Entry point for every flow", icon: Play, accent: "from-emerald-400/90 via-emerald-500 to-teal-500" },
+  { type: "trigger", label: "Trigger", description: "Listen for channel activity", icon: Target, accent: "from-sky-400/90 via-sky-500 to-blue-500" },
+  { type: "http", label: "HTTP", description: "Call REST or webhook endpoints", icon: Globe, accent: "from-yellow-300/80 via-amber-400 to-orange-500" },
+  { type: "llm", label: "AI Model", description: "Generate content with LLMs", icon: Brain, accent: "from-pink-400/90 via-rose-500 to-fuchsia-500" },
+  { type: "transform", label: "Transform", description: "Reshape and clean data", icon: Zap, accent: "from-purple-400/90 via-violet-500 to-indigo-500" },
+  { type: "conditional", label: "Branch", description: "Route logic with conditions", icon: GitBranch, accent: "from-cyan-400/90 via-blue-500 to-indigo-500" },
+  { type: "parallel", label: "Parallel", description: "Fan out concurrent tasks", icon: Layers, accent: "from-fuchsia-400/90 via-purple-500 to-blue-500" },
+  { type: "wait", label: "Delay", description: "Pause execution by time", icon: Clock, accent: "from-slate-400/90 via-slate-500 to-slate-600" },
+  { type: "subflow", label: "Subflow", description: "Reuse saved mini flows", icon: Package, accent: "from-teal-400/90 via-emerald-500 to-green-500" },
+];
+
+function FlowContent({ assistantId }) {
+  const router = useRouter();
   const tf = useTextflowStore();
+  const { fitView } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [loading, setLoading] = useState(false);
   const [saveStatus, setSaveStatus] = useState("");
   const [testInput, setTestInput] = useState("Test my flow");
+  // Initialize flowName from localStorage or default
+  const [flowName, setFlowName] = useState(() => {
+    if (typeof window !== 'undefined' && assistantId) {
+      const saved = localStorage.getItem(`flow_name_${assistantId}`);
+      return saved || "Untitled Text Flow";
+    }
+    return "Untitled Text Flow";
+  });
+  const [isEditingName, setIsEditingName] = useState(false);
   const [showTriggerManager, setShowTriggerManager] = useState(false);
   const [showTemplateGallery, setShowTemplateGallery] = useState(false);
   const [showComponentLibrary, setShowComponentLibrary] = useState(false);
   const [showConnectorPanel, setShowConnectorPanel] = useState(false);
+  const [showComponentModal, setShowComponentModal] = useState(false);
+  const [componentSearch, setComponentSearch] = useState("");
+  const [flowActive, setFlowActive] = useState(true);
   const [selectedNodeType, setSelectedNodeType] = useState(null);
   const [notification, setNotification] = useState(null);
   
@@ -40,8 +77,19 @@ export default function TextFlowEditor({ assistantId }) {
   // Console height state (resizable)
   const [consoleHeight, setConsoleHeight] = useState(200);
   const [isResizing, setIsResizing] = useState(false);
+  const [consoleCollapsed, setConsoleCollapsed] = useState(true);
   const resizeStartY = useRef(0);
   const resizeStartHeight = useRef(0);
+
+  const componentDropdownOffset = consoleCollapsed ? 140 : Math.min(consoleHeight + 160, 520);
+  const filteredComponents = useMemo(() => {
+    const query = componentSearch.trim().toLowerCase();
+    if (!query) return COMPONENT_OPTIONS;
+    return COMPONENT_OPTIONS.filter((option) =>
+      `${option.label} ${option.type} ${option.description}`.toLowerCase().includes(query)
+    );
+  }, [componentSearch]);
+
   
   const isLoadingRef = useRef(false);
   const { sendMessage, isConnected } = useWebSocketStream(true, assistantId);
@@ -60,6 +108,7 @@ export default function TextFlowEditor({ assistantId }) {
     document.body.style.cursor = 'ns-resize';
     document.body.style.userSelect = 'none';
   };
+
 
   useEffect(() => {
     if (!isResizing) return;
@@ -95,21 +144,64 @@ export default function TextFlowEditor({ assistantId }) {
         setLoading(true);
         const data = await getTextFlow(assistantId);
         
+        // Load flow name first (even if no flow_data exists)
+        // Try API response first, then fallback to localStorage
+        if (data.name) {
+          setFlowName(data.name);
+          tf.setFlow({ name: data.name });
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(`flow_name_${assistantId}`, data.name);
+          }
+          console.log('✅ Loaded flow name from API:', data.name);
+        } else {
+          // Fallback to localStorage if API doesn't return name
+          if (typeof window !== 'undefined') {
+            const savedName = localStorage.getItem(`flow_name_${assistantId}`);
+            if (savedName) {
+              setFlowName(savedName);
+              tf.setFlow({ name: savedName });
+              console.log('✅ Loaded flow name from localStorage:', savedName);
+            } else {
+              console.log('⚠️ No name in API response or localStorage');
+            }
+          } else {
+            console.log('⚠️ No name in API response');
+          }
+        }
+        
         if (data.flow_data?.nodes?.length > 0) {
           setNodes(data.flow_data.nodes);
-          setEdges(data.flow_data.edges || []);
+          // Normalize edge styles to match visual editor
+          const normalizedEdges = (data.flow_data.edges || []).map(edge => ({
+            ...edge,
+            animated: false,
+            style: {
+              ...edge.style,
+              stroke: '#13F584',
+              strokeWidth: 1,
+              opacity: 0.6,
+            }
+          }));
+          setEdges(normalizedEdges);
           tf.setNodes(data.flow_data.nodes);
-          tf.setEdges(data.flow_data.edges || []);
+          tf.setEdges(normalizedEdges);
           
           tf.appendConsole({ 
             ts: Date.now(), 
             kind: "info", 
-            text: `Loaded flow with ${data.flow_data.nodes.length} nodes` 
+            text: `Loaded flow with ${data.flow_data.nodes.length} nodes${data.name ? `, name: ${data.name}` : ''}` 
           });
+        } else if (data.flow_data) {
+          // Flow exists but has no nodes yet
+          setNodes([]);
+          setEdges([]);
+          tf.setNodes([]);
+          tf.setEdges([]);
         }
       } catch (e) {
         tf.appendConsole({ ts: Date.now(), kind: "error", text: `Load failed: ${e.message}` });
         showNotification('error', `Failed to load flow: ${e.message}`);
+        console.error('Failed to load flow:', e);
       } finally {
         setLoading(false);
         isLoadingRef.current = false;
@@ -121,11 +213,27 @@ export default function TextFlowEditor({ assistantId }) {
   useEffect(() => {
     if (isLoadingRef.current) return;
     setNodes(tf.flow.nodes);
-  }, [tf.flow.nodes]);
+    // Fit view to show all nodes when they change
+    if (tf.flow.nodes.length > 0) {
+      setTimeout(() => {
+        fitView({ padding: 0.2, duration: 300 });
+      }, 100);
+    }
+  }, [tf.flow.nodes, fitView]);
 
   useEffect(() => {
     if (isLoadingRef.current) return;
-    setEdges(tf.flow.edges);
+    const normalizedEdges = (tf.flow.edges || []).map(edge => ({
+      ...edge,
+      animated: false,
+      style: {
+        ...edge.style,
+        stroke: '#13F584',
+        strokeWidth: 1,
+        opacity: 0.6,
+      }
+    }));
+    setEdges(normalizedEdges);
   }, [tf.flow.edges]);
 
   // Debounced sync back to store
@@ -170,14 +278,19 @@ export default function TextFlowEditor({ assistantId }) {
     
     try {
       setSaveStatus("Saving...");
-      const payload = { nodes, edges };
+      const payload = { nodes, edges, name: flowName };
       await saveTextFlow(assistantId, payload);
+      
+      // Save name to localStorage as backup
+      if (typeof window !== 'undefined' && assistantId) {
+        localStorage.setItem(`flow_name_${assistantId}`, flowName);
+      }
       
       setSaveStatus("✓ Saved");
       tf.appendConsole({ 
         ts: Date.now(), 
         kind: "info", 
-        text: `Flow saved: ${nodes.length} nodes, ${edges.length} edges` 
+        text: `Flow saved: ${nodes.length} nodes, ${edges.length} edges, name: ${flowName}` 
       });
       showNotification('success', 'Flow saved successfully');
       setTimeout(() => setSaveStatus(""), 2000);
@@ -187,7 +300,7 @@ export default function TextFlowEditor({ assistantId }) {
       showNotification('error', `Save failed: ${e.message}`);
       setTimeout(() => setSaveStatus(""), 3000);
     }
-  }, [assistantId, nodes, edges, tf]);
+  }, [assistantId, nodes, edges, flowName, tf]);
 
   const handleRun = useCallback(() => {
     if (!nodes.length) {
@@ -232,7 +345,7 @@ export default function TextFlowEditor({ assistantId }) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${tf.flow.name.replace(/\s+/g, '_')}_flow.json`;
+    a.download = `${flowName.replace(/\s+/g, '_')}_flow.json`;
     a.click();
     URL.revokeObjectURL(url);
     tf.appendConsole({ ts: Date.now(), kind: "info", text: "Flow exported" });
@@ -252,9 +365,19 @@ export default function TextFlowEditor({ assistantId }) {
         const flowData = JSON.parse(text);
         if (flowData.nodes && flowData.edges) {
           setNodes(flowData.nodes);
-          setEdges(flowData.edges);
+          const normalizedEdges = flowData.edges.map(edge => ({
+            ...edge,
+            animated: false,
+            style: {
+              ...edge.style,
+              stroke: '#13F584',
+              strokeWidth: 1,
+              opacity: 0.6,
+            }
+          }));
+          setEdges(normalizedEdges);
           tf.setNodes(flowData.nodes);
-          tf.setEdges(flowData.edges);
+          tf.setEdges(normalizedEdges);
           tf.appendConsole({ ts: Date.now(), kind: "info", text: "Flow imported" });
           showNotification('success', `Flow imported: ${flowData.nodes.length} nodes`);
         } else {
@@ -277,9 +400,19 @@ export default function TextFlowEditor({ assistantId }) {
     console.log("Applying chatbot flow:", flow);
     
     setNodes(flow.nodes);
-    setEdges(flow.edges || []);
+    const normalizedEdges = (flow.edges || []).map(edge => ({
+      ...edge,
+      animated: false,
+      style: {
+        ...edge.style,
+        stroke: '#13F584',
+        strokeWidth: 1,
+        opacity: 0.6,
+      }
+    }));
+    setEdges(normalizedEdges);
     tf.setNodes(flow.nodes);
-    tf.setEdges(flow.edges || []);
+    tf.setEdges(normalizedEdges);
     
     tf.appendConsole({ 
       ts: Date.now(), 
@@ -361,10 +494,21 @@ export default function TextFlowEditor({ assistantId }) {
 
       console.log("✅ Loading template nodes:", newNodes.length, "edges:", newEdges.length);
 
+      const normalizedEdges = newEdges.map(edge => ({
+        ...edge,
+        animated: false,
+        style: {
+          ...edge.style,
+          stroke: '#13F584',
+          strokeWidth: 1,
+          opacity: 0.6,
+        }
+      }));
+
       setNodes(newNodes);
-      setEdges(newEdges);
+      setEdges(normalizedEdges);
       tf.setNodes(newNodes);
-      tf.setEdges(newEdges);
+      tf.setEdges(normalizedEdges);
       
       let message = `Template "${template.name}" loaded: ${newNodes.length} nodes`;
       if (httpNodesWithoutCreds.length > 0) {
@@ -403,8 +547,8 @@ export default function TextFlowEditor({ assistantId }) {
   const handleSelectComponent = (component) => {
     const id = `${component.node_type}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     const existingNodes = nodes.length;
-    const x = 100 + (existingNodes % 3) * 280;
-    const y = 100 + Math.floor(existingNodes / 3) * 160;
+    const x = 20 + (existingNodes % 4) * 150;
+    const y = 50 + Math.floor(existingNodes / 4) * 120;
     
     const newNode = {
       id,
@@ -433,9 +577,9 @@ export default function TextFlowEditor({ assistantId }) {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-slate-950 to-gray-950">
+      <div className="h-screen flex items-center justify-center" style={{ background: '#141A21' }}>
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-gray-700 border-t-indigo-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-gray-700 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4"></div>
           <div className="text-sm font-medium text-gray-300">Loading flow...</div>
         </div>
       </div>
@@ -445,253 +589,279 @@ export default function TextFlowEditor({ assistantId }) {
   const selectedNode = nodes.find(n => n.id === tf.selection);
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-gray-950 via-slate-950 to-gray-950">
-      {/* Notification Toast */}
-      {notification && (
-        <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 duration-300">
-          <div className={`
-            px-4 py-3 rounded-lg shadow-2xl border backdrop-blur-sm max-w-md
-            ${notification.type === 'success' ? 'bg-emerald-950/90 border-emerald-800/50 text-emerald-100' : ''}
-            ${notification.type === 'error' ? 'bg-red-950/90 border-red-800/50 text-red-100' : ''}
-            ${notification.type === 'warning' ? 'bg-yellow-950/90 border-yellow-800/50 text-yellow-100' : ''}
-          `}>
-            <div className="flex items-start gap-3">
-              {notification.type === 'success' && <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />}
-              {notification.type === 'error' && <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />}
-              {notification.type === 'warning' && <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />}
-              <div className="flex-1">
-                <div className="text-sm font-medium">{notification.message}</div>
-              </div>
-              <button 
-                onClick={() => setNotification(null)}
-                className="text-current hover:opacity-70 transition-opacity"
-              >
-                ×
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Top Bar */}
-      <div className="h-16 bg-gray-900/80 backdrop-blur-xl border-b border-gray-700/50 px-6 flex items-center justify-between shadow-2xl">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
-              <Layers className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-white">{tf.flow.name}</h1>
-              <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${isConnected() ? 'bg-emerald-500' : 'bg-red-500'} animate-pulse`} />
-                <span className="text-xs text-gray-400">{isConnected() ? 'Connected' : 'Disconnected'}</span>
+    <div className="h-screen flex bg-[#141A21] relative">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Notification Toast */}
+        {notification && (
+          <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 duration-300">
+            <div className={`
+              px-4 py-3 rounded-lg shadow-2xl border backdrop-blur-sm max-w-md
+              ${notification.type === 'success' ? 'bg-emerald-950/90 border-emerald-800/50 text-emerald-100' : ''}
+              ${notification.type === 'error' ? 'bg-red-950/90 border-red-800/50 text-red-100' : ''}
+              ${notification.type === 'warning' ? 'bg-yellow-950/90 border-yellow-800/50 text-yellow-100' : ''}
+            `}>
+              <div className="flex items-start gap-3">
+                {notification.type === 'success' && <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />}
+                {notification.type === 'error' && <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />}
+                {notification.type === 'warning' && <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />}
+                <div className="flex-1">
+                  <div className="text-sm font-medium">{notification.message}</div>
+                </div>
+                <button 
+                  onClick={() => setNotification(null)}
+                  className="text-current hover:opacity-70 transition-opacity"
+                >
+                  ×
+                </button>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
+        {/* Top Bar */}
+      <div
+        className="h-16 px-6 flex items-center justify-between shadow-2xl relative"
+        style={{
+          background: '#141A21',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.12)'
+        }}
+      >
         <div className="flex items-center gap-3">
           <button
-            onClick={() => setShowTemplateGallery(true)}
-            className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 flex items-center gap-2"
-            title="Browse Templates"
+            type="button"
+            onClick={() => router.back()}
+            className="text-white/70 hover:text-white transition-colors p-1"
+            aria-label="Go back"
           >
-            <Sparkles className="w-4 h-4" />
-            Templates
+            <ArrowLeft className="w-5 h-5" />
           </button>
+          <div className="flex items-center gap-4">
+            {isEditingName ? (
+              <input
+                type="text"
+                value={flowName}
+                onChange={(e) => {
+                  const newName = e.target.value;
+                  setFlowName(newName);
+                  tf.setFlow({ name: newName });
+                  if (typeof window !== 'undefined' && assistantId) {
+                    localStorage.setItem(`flow_name_${assistantId}`, newName);
+                  }
+                }}
+                onBlur={() => {
+                  setIsEditingName(false);
+                  if (!flowName.trim()) {
+                    const defaultName = "Untitled Text Flow";
+                    setFlowName(defaultName);
+                    tf.setFlow({ name: defaultName });
+                    if (typeof window !== 'undefined' && assistantId) {
+                      localStorage.setItem(`flow_name_${assistantId}`, defaultName);
+                    }
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setIsEditingName(false);
+                    if (!flowName.trim()) {
+                      const defaultName = "Untitled Text Flow";
+                      setFlowName(defaultName);
+                      tf.setFlow({ name: defaultName });
+                      if (typeof window !== 'undefined' && assistantId) {
+                        localStorage.setItem(`flow_name_${assistantId}`, defaultName);
+                      }
+                    }
+                  } else if (e.key === 'Escape') {
+                    setIsEditingName(false);
+                    const originalName = tf.flow.name || "Untitled Text Flow";
+                    setFlowName(originalName);
+                  }
+                }}
+                className="text-base font-bold text-white bg-transparent border-b border-white/30 focus:outline-none focus:border-white px-1 py-0.5 max-w-[160px]"
+                autoFocus
+              />
+            ) : (
+              <h1
+              className="text-lg font-extrabold text-white cursor-pointer tracking-wide"
+                onClick={() => setIsEditingName(true)}
+                title="Click to edit workflow name"
+              >
+                {flowName}
+              </h1>
+            )}
+            <span
+              className={`text-[12px] font-bold uppercase tracking-[0.25em] px-3 py-0.5 rounded-md border ${
+                isConnected()
+                  ? "border-emerald-400/50 bg-emerald-500/10 text-emerald-200"
+                  : "border-white/20 bg-white/5 text-white/70"
+              }`}
+            >
+              {isConnected() ? "Connected" : "Disconnected"}
+            </span>
+          </div>
+        </div>
 
-          <button
-            onClick={() => setShowConnectorPanel(true)}
-            className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 flex items-center gap-2"
-            title="API Connectors"
-          >
-            <Plug className="w-4 h-4" />
-            Connectors
-          </button>
-
-          <button
-            onClick={() => setShowComponentLibrary(true)}
-            className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/30 flex items-center gap-2"
-            title="Component Library"
-          >
-            <Package className="w-4 h-4" />
-            Components
-          </button>
-
-          <button
-            onClick={() => {
-              setShowChatbot(!showChatbot);
-              setChatbotMinimized(false);
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
+          <label
+            className="cursor-pointer"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "flex-start",
+              padding: 0,
+              width: "33px",
+              height: "38px",
             }}
-            className={`px-4 py-2 ${
-              showChatbot 
-                ? 'bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700' 
-                : 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700'
-            } text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 flex items-center gap-2`}
-            title="AI Flow Builder"
           >
-            <Bot className="w-4 h-4" />
-            {showChatbot ? 'Hide AI' : 'AI Builder'}
-          </button>
+            <input
+              type="checkbox"
+              className="sr-only peer"
+              checked={flowActive}
+              onChange={() => setFlowActive((prev) => !prev)}
+            />
+            <div className="relative w-9 h-5 bg-white/10 peer-checked:bg-emerald-400/80 rounded-full transition-colors duration-200 after:content-[''] after:absolute after:h-4 after:w-4 after:bg-white after:rounded-full after:top-0.5 after:left-[2px] after:transition-all peer-checked:after:translate-x-4 shadow-inner" />
+          </label>
+          <span className="ml-3 text-sm font-bold text-white uppercase tracking-[0.2em]">
+            Active
+          </span>
+        </div>
 
-          <button
-            onClick={() => setShowTriggerManager(true)}
-            className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/30 flex items-center gap-2"
-            title="Manage Triggers & Credentials"
+        <div className="flex items-center gap-5">
+          <div
+            className="flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 my-1"
           >
-            <Key className="w-4 h-4" />
-            <Activity className="w-4 h-4" />
-          </button>
+            <input
+              type="text"
+              value={testInput}
+              onChange={(e) => setTestInput(e.target.value)}
+              placeholder="Test input…"
+              className="w-56 bg-transparent text-base font-semibold text-white placeholder-white/40 focus:outline-none"
+            />
+          </div>
 
-          <input
-            type="text"
-            value={testInput}
-            onChange={(e) => setTestInput(e.target.value)}
-            placeholder="Test input..."
-            className="w-64 px-4 py-2 bg-gray-800 border border-gray-700 rounded-xl text-sm text-white placeholder-gray-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-          />
-          <button
-            onClick={handleRun}
-            disabled={!nodes.length || !isConnected()}
-            className="px-5 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl text-sm font-semibold transition-all shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            <Play className="w-4 h-4" />
-            Run
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={loading}
-            className="px-5 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-xl text-sm font-semibold border border-gray-700 transition-all shadow-lg flex items-center gap-2"
-          >
-            <Save className="w-4 h-4" />
-            {saveStatus || "Save"}
-          </button>
-          <button
-            onClick={handleExport}
-            className="p-2 bg-gray-800 hover:bg-gray-700 text-white rounded-xl border border-gray-700 transition-all shadow-lg"
-            title="Export flow"
-          >
-            <Download className="w-4 h-4" />
-          </button>
-          <button
-            onClick={handleImport}
-            className="p-2 bg-gray-800 hover:bg-gray-700 text-white rounded-xl border border-gray-700 transition-all shadow-lg"
-            title="Import flow"
-          >
-            <Upload className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleSave}
+              disabled={loading}
+              className="flex h-10 min-w-[95px] items-center justify-center gap-2 rounded-lg border border-[rgba(19,245,132,0.48)] px-5 text-[12px] font-bold uppercase tracking-wide text-[#13F584] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Save className="w-4 h-4 text-[#13F584]" />
+              <span>{saveStatus || "Save"}</span>
+            </button>
+            <button
+              onClick={handleRun}
+              disabled={!nodes.length || !isConnected()}
+              className="flex h-10 items-center gap-2 rounded-lg border border-white/20 px-6 text-[12px] font-bold uppercase tracking-wide text-white hover:border-white/60 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Play className="w-4 h-4" />
+              Run
+            </button>
+            <button
+              onClick={handleImport}
+              className="flex h-10 items-center gap-2 rounded-lg border border-white/15 px-4 text-[12px] font-bold uppercase tracking-wide text-white hover:border-white/50"
+              title="Import flow"
+            >
+              <Upload className="w-4.5 h-4.5" />
+              <span>Import</span>
+            </button>
+            <button
+              onClick={handleExport}
+              className="flex h-10 items-center gap-2 rounded-lg border border-white/15 px-4 text-[12px] font-bold uppercase tracking-wide text-white hover:border-white/50"
+              title="Export flow"
+            >
+              <Download className="w-4.5 h-4.5" />
+              <span>Export</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar */}
-        <div className="w-72 flex-shrink-0">
-          <NodeSidebar />
-        </div>
-
-        {/* Canvas Area */}
-        <div className="flex-1 p-4" style={{ height: `calc(100vh - 64px - ${consoleHeight}px)` }}>
-          <div className="h-full rounded-2xl bg-gradient-to-br from-gray-900 to-slate-900 border border-gray-700/50 shadow-2xl overflow-hidden relative">
-            <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
-              onNodeClick={onNodeClick}
-              onPaneClick={onPaneClick}
-              nodeTypes={nodeTypes}
-              fitView
-              defaultEdgeOptions={{ 
-                type: "smoothstep",
-                animated: true,
-                style: { stroke: '#6366f1', strokeWidth: 2 }
+      {/* Canvas Area - Full Page */}
+      <div className="flex-1 relative bg-[#141A21]">
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onNodeClick={onNodeClick}
+          onPaneClick={onPaneClick}
+          nodeTypes={nodeTypes}
+          fitView
+          fitViewOptions={{ padding: 0.2 }}
+          connectionLineType={ConnectionLineType.SmoothStep}
+          connectionLineStyle={{
+            stroke: '#13F584',
+            strokeWidth: 1,
+            strokeDasharray: '5 5',
+            opacity: 0.6,
+          }}
+          defaultEdgeOptions={{ 
+            type: "smoothstep",
+            animated: false,
+            style: { 
+              stroke: '#13F584', 
+              strokeWidth: 1,
+              opacity: 0.6
+            }
+          }}
+          style={{ 
+            background: '#141A21',
+            width: '100%',
+            height: '100%'
+          }}
+        >
+            <Background 
+              color="#FFFFFF" 
+              gap={10} 
+              size={1.5}
+              variant="dots"
+              style={{ opacity: 0.2 }}
+            />
+            <Controls 
+              className="!bg-white/8 !border-white/20 !rounded-xl !shadow-2xl !backdrop-blur-xl [&_button]:!bg-transparent [&_button]:!border-white/20 [&_button:hover]:!bg-white/10 [&_button]:!text-white [&_svg]:!text-white [&_svg_path]:!stroke-white [&_svg_path]:!fill-white"
+              showInteractive={false}
+              showFitView={false}
+              style={{ 
+                backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                bottom: '16px',
+                left: '16px',
+                right: 'auto',
+                top: 'auto'
               }}
-            >
-              <Background 
-                gap={24} 
-                size={1} 
-                color="#4b5563"
-                style={{ opacity: 0.3 }}
-              />
-              <MiniMap 
-                pannable 
-                zoomable
-                className="!bg-gray-800/80 !border-gray-700 !rounded-lg !shadow-lg"
-                nodeColor={(node) => {
-                  const colorMap = {
-                    start: '#10b981',
-                    trigger: '#3b82f6',
-                    http: '#8b5cf6',
-                    llm: '#ec4899',
-                    transform: '#f59e0b',
-                    conditional: '#6366f1',
-                    parallel: '#d946ef',
-                    wait: '#6b7280',
-                    subflow: '#06b6d4',
-                  };
-                  return colorMap[node.type] || '#6b7280';
-                }}
-              />
-              <Controls 
-                className="!bg-gray-800/80 !border-gray-700 !rounded-lg !shadow-lg [&_button]:!bg-gray-700 [&_button]:!border-gray-600 [&_button:hover]:!bg-gray-600 [&_button]:!text-white"
-              />
-            </ReactFlow>
-            
-            {nodes.length === 0 && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="text-center">
-                  <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-2xl shadow-indigo-500/25">
-                    <Zap className="w-10 h-10 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-2">Build Your Flow</h3>
-                  <p className="text-sm text-gray-400 max-w-md mb-4">
-                    Add nodes from the sidebar to create your automation workflow.
-                    Connect them to define your flow logic.
-                  </p>
-                  <div className="flex gap-2 justify-center pointer-events-auto">
-                    <button
-                      onClick={() => {
-                        setShowChatbot(true);
-                        setChatbotMinimized(false);
-                      }}
-                      className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-lg text-sm font-medium transition-all flex items-center gap-2 shadow-lg"
-                    >
-                      <Bot className="w-4 h-4" />
-                      Build with AI
-                    </button>
-                    <button
-                      onClick={() => setShowTemplateGallery(true)}
-                      className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-all flex items-center gap-2"
-                    >
-                      <Sparkles className="w-4 h-4" />
-                      Browse Templates
-                    </button>
-                    <button
-                      onClick={() => setShowConnectorPanel(true)}
-                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-all flex items-center gap-2"
-                    >
-                      <Plug className="w-4 h-4" />
-                      Connectors
-                    </button>
-                    <button
-                      onClick={() => setShowComponentLibrary(true)}
-                      className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium transition-all flex items-center gap-2"
-                    >
-                      <Package className="w-4 h-4" />
-                      Components
-                    </button>
-                  </div>
+            />
+            <style dangerouslySetInnerHTML={{__html: `
+              .react-flow__controls button svg path {
+                stroke: #FFFFFF !important;
+                fill: #FFFFFF !important;
+              }
+              .react-flow__controls button {
+                color: #FFFFFF !important;
+              }
+              .react-flow__controls button svg {
+                color: #FFFFFF !important;
+              }
+            `}} />
+          </ReactFlow>
+          
+          {nodes.length === 0 && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                  <Zap className="w-10 h-10 text-white" />
                 </div>
+                <span className="text-sm text-gray-400">Create your flows, use minibar</span>
               </div>
-            )}
-          </div>
-        </div>
+            </div>
+          )}
 
         {/* AI Chatbot Panel - Right Side */}
         {showChatbot && !chatbotMinimized && (
-          <div className="w-[420px] flex-shrink-0 p-4 pl-0">
+          <div className="absolute right-0 top-0 bottom-0 w-[420px] flex-shrink-0 p-4 pl-0 z-10">
             <FlowChatbotPanel
               currentFlow={{ nodes, edges }}
               onApplyFlow={handleApplyChatbotFlow}
@@ -714,21 +884,211 @@ export default function TextFlowEditor({ assistantId }) {
             onToggleMinimize={() => setChatbotMinimized(!chatbotMinimized)}
           />
         )}
-      </div>
 
-      {/* Resizable Console Panel */}
-      <div className="relative px-4 pb-4" style={{ height: consoleHeight }}>
-        {/* Resize Handle */}
-        <div
-          className="absolute top-0 left-0 right-0 h-2 cursor-ns-resize hover:bg-indigo-500/20 transition-colors group z-10"
-          onMouseDown={handleResizeStart}
+
+        {/* Bottom Control Bar - Center */}
+        <div 
+          className="absolute left-1/2 -translate-x-1/2 z-20 flex items-center"
+          style={{
+            bottom: consoleCollapsed ? '60px' : `${consoleHeight + 20}px`,
+            background: 'rgba(255, 255, 255, 0.04)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            borderRadius: '58px',
+            padding: '8px',
+            gap: '12px',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            transition: 'bottom 0.3s ease',
+            pointerEvents: 'none'
+          }}
         >
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-1 bg-gray-700 rounded-full group-hover:bg-indigo-500 transition-colors flex items-center justify-center">
-            <GripHorizontal className="w-4 h-4 text-gray-600 group-hover:text-indigo-400" />
+        {/* Components Button */}
+        <div className="relative group" style={{ pointerEvents: 'auto' }}>
+          <button
+            onClick={() => setShowComponentModal(true)}
+            className="w-10 h-10 flex items-center justify-center rounded-full transition-all hover:scale-105"
+            style={{ background: 'transparent' }}
+          >
+            <img src={MINIBAR_ICONS.components} alt="Components" className="w-10 h-10" />
+          </button>
+          {/* Tooltip */}
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
+            style={{
+              background: 'rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255, 255, 255, 0.12)'
+            }}
+          >
+            Components
           </div>
         </div>
-        <div className="h-full pt-2">
-          <ConsolePanel />
+
+        {/* Templates Button */}
+        <div className="relative group" style={{ pointerEvents: 'auto' }}>
+          <button
+            onClick={() => setShowTemplateGallery(true)}
+            className="w-10 h-10 flex items-center justify-center rounded-full transition-all hover:scale-105"
+            style={{ background: 'transparent' }}
+          >
+            <img src={MINIBAR_ICONS.templates} alt="Templates" className="w-10 h-10" />
+          </button>
+          {/* Tooltip */}
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
+            style={{
+              background: 'rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255, 255, 255, 0.12)'
+            }}
+          >
+            Templates
+          </div>
+        </div>
+
+        {/* Subflows Button */}
+        <div className="relative group" style={{ pointerEvents: 'auto' }}>
+          <button
+            onClick={() => setShowComponentLibrary(true)}
+            className="w-10 h-10 flex items-center justify-center rounded-full transition-all hover:scale-105"
+            style={{ background: 'transparent' }}
+          >
+            <img src={MINIBAR_ICONS.subflows} alt="Subflows" className="w-10 h-10" />
+          </button>
+          {/* Tooltip */}
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
+            style={{
+              background: 'rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255, 255, 255, 0.12)'
+            }}
+          >
+            Component Library
+          </div>
+        </div>
+
+        {/* Connectors Button */}
+        <div className="relative group" style={{ pointerEvents: 'auto' }}>
+          <button
+            onClick={() => setShowConnectorPanel(true)}
+            className="w-10 h-10 flex items-center justify-center rounded-full transition-all hover:scale-105"
+            style={{ background: 'transparent' }}
+          >
+            <img src={MINIBAR_ICONS.connectors} alt="Connectors" className="w-10 h-10" />
+          </button>
+          {/* Tooltip */}
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
+            style={{
+              background: 'rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255, 255, 255, 0.12)'
+            }}
+          >
+            Connectors
+          </div>
+        </div>
+
+        {/* Trigger Manager Button */}
+        <div className="relative group" style={{ pointerEvents: 'auto' }}>
+          <button
+            onClick={() => setShowTriggerManager(true)}
+            className="w-10 h-10 flex items-center justify-center rounded-full transition-all hover:scale-105"
+            style={{ background: 'transparent' }}
+          >
+            <img src={MINIBAR_ICONS.triggers} alt="Triggers & Credentials" className="w-10 h-10" />
+          </button>
+          {/* Tooltip */}
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
+            style={{
+              background: 'rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255, 255, 255, 0.12)'
+            }}
+          >
+            Triggers & Credentials
+          </div>
+        </div>
+
+        {/* Console Button */}
+        <div className="relative group" style={{ pointerEvents: 'auto' }}>
+          <button
+            onClick={() => setConsoleCollapsed(!consoleCollapsed)}
+            className="w-10 h-10 flex items-center justify-center rounded-full transition-all hover:scale-105"
+            style={{ background: 'transparent' }}
+          >
+            <img src={MINIBAR_ICONS.console} alt="Console" className="w-10 h-10" />
+          </button>
+          {/* Tooltip */}
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
+            style={{
+              background: 'rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255, 255, 255, 0.12)'
+            }}
+          >
+            Console
+          </div>
+        </div>
+
+        {/* AI Button */}
+        <div className="relative group" style={{ pointerEvents: 'auto' }}>
+          <button
+            onClick={() => {
+              setShowChatbot(!showChatbot);
+              setChatbotMinimized(false);
+            }}
+            className="w-10 h-10 flex items-center justify-center rounded-full transition-all hover:scale-105"
+            style={{ background: 'transparent' }}
+          >
+            <img
+              src={MINIBAR_ICONS.aiDefault}
+              alt="Workflow Builder"
+              className="w-10 h-10"
+            />
+          </button>
+          {/* Tooltip */}
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
+            style={{
+              background: 'rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid rgba(255, 255, 255, 0.12)'
+            }}
+          >
+            Workflow Builder
+          </div>
+        </div>
+        </div>
+
+        {/* Resizable Console Panel */}
+        <div 
+          className="absolute bottom-0 left-0 right-0 transition-all duration-300 overflow-hidden cursor-pointer z-20" 
+          style={{ height: consoleCollapsed ? '40px' : consoleHeight, paddingBottom: consoleCollapsed ? '0' : '1rem' }}
+          onClick={() => setConsoleCollapsed(!consoleCollapsed)}
+        >
+        {/* Resize Handle */}
+        {!consoleCollapsed && (
+          <div
+            className="absolute top-0 left-0 right-0 h-2 cursor-ns-resize hover:bg-emerald-500/20 transition-colors group z-10"
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              handleResizeStart(e);
+            }}
+          >
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-1 bg-gray-700 rounded-full group-hover:bg-emerald-500 transition-colors flex items-center justify-center">
+              <GripHorizontal className="w-4 h-4 text-gray-600 group-hover:text-emerald-400" />
+            </div>
+          </div>
+        )}
+        {!consoleCollapsed && (
+          <div className="h-full pt-2">
+            <ConsolePanel />
+          </div>
+        )}
         </div>
       </div>
 
@@ -737,12 +1097,12 @@ export default function TextFlowEditor({ assistantId }) {
         <div className="fixed inset-0 z-40 flex items-center justify-center p-4">
           {/* Backdrop with blur */}
           <div 
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => tf.setSelection(null)}
           />
           
-          {/* Config Panel - Fixed height with proper overflow */}
-          <div className="relative z-50 w-full max-w-2xl h-[90vh] max-h-[90vh]">
+          {/* Config Panel - Scrollable content */}
+          <div className="relative z-50 w-full max-w-2xl h-[90vh] flex flex-col">
             <ConfigPanel assistantId={assistantId} />
           </div>
         </div>
@@ -781,6 +1141,147 @@ export default function TextFlowEditor({ assistantId }) {
           onClose={() => setShowConnectorPanel(false)}
         />
       )}
+
+      {/* Component Selection Dropdown */}
+      {showComponentModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center pointer-events-none"
+          style={{ paddingBottom: componentDropdownOffset }}
+        >
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-[2px] pointer-events-auto"
+            onClick={() => setShowComponentModal(false)}
+          />
+
+          <div
+            className="relative pointer-events-auto w-full max-w-[520px] px-4"
+          >
+            <div
+              className="rounded-3xl border border-white/12 bg-white/5 backdrop-blur-2xl shadow-[0_20px_80px_rgba(0,0,0,0.45)]"
+            >
+              <div className="flex flex-col gap-3 p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-white">Components</p>
+                  </div>
+                  <button
+                    onClick={() => setShowComponentModal(false)}
+                    className="h-8 w-8 rounded-full border border-white/10 text-white/70 hover:text-white hover:border-white/30 transition-colors flex items-center justify-center"
+                    title="Close"
+                  >
+                    <span className="sr-only">Close</span>
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/40" />
+                  <input
+                    type="text"
+                    value={componentSearch}
+                    onChange={(e) => setComponentSearch(e.target.value)}
+                    placeholder="Search components"
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 py-2.5 pl-10 pr-3 text-xs text-white placeholder:text-white/40 focus:outline-none focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20"
+                  />
+                </div>
+
+                <div
+                  className="component-scroll max-h-[360px] overflow-y-auto pr-1 space-y-1.5"
+                  style={{ scrollbarWidth: "thin" }}
+                >
+                  {filteredComponents.length === 0 && (
+                    <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 p-5 text-center text-xs text-white/60">
+                      No components match “{componentSearch}”.
+                    </div>
+                  )}
+
+                  {filteredComponents.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.type}
+                        onClick={() => {
+                          const id = `${item.type}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+                          const existingNodes = nodes.length;
+                          const x = 100 + (existingNodes % 3) * 280;
+                          const y = 100 + Math.floor(existingNodes / 3) * 160;
+
+                          const node = {
+                            id,
+                            type: item.type,
+                            position: { x, y },
+                            data: {
+                              label: item.label,
+                              config: {}
+                            }
+                          };
+
+                          setNodes([...nodes, node]);
+                          tf.setSelection(id);
+
+                          if (!tf.flow.entryNodeId || item.type === "start") {
+                            tf.setFlow({ entryNodeId: id });
+                          }
+
+                          tf.appendConsole({
+                            ts: Date.now(),
+                            kind: "info",
+                            text: `Added ${item.type} node`
+                          });
+
+                          setComponentSearch("");
+                          setShowComponentModal(false);
+                        }}
+                        className="w-full flex items-center gap-3 rounded-2xl bg-white/5 p-3 text-left transition-all hover:bg-white/10"
+                      >
+                        <div className={`h-11 w-11 rounded-2xl bg-gradient-to-br ${item.accent} flex items-center justify-center shadow-lg shadow-black/30`}>
+                          <Icon className="h-5 w-5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-[13px] font-medium text-white">{item.label}</p>
+                          <p className="text-[11px] text-white/60">{item.description}</p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `
+                .component-scroll::-webkit-scrollbar {
+                  width: 6px;
+                }
+                .component-scroll::-webkit-scrollbar-track {
+                  background: transparent;
+                }
+                .component-scroll::-webkit-scrollbar-thumb {
+                  background: rgba(255,255,255,0.2);
+                  border-radius: 999px;
+                  border-top: 10px solid transparent;
+                  border-bottom: 10px solid transparent;
+                  background-clip: padding-box;
+                  min-height: 24px;
+                }
+                .component-scroll::-webkit-scrollbar-thumb:hover {
+                  background: rgba(255,255,255,0.35);
+                }
+              `,
+            }}
+          />
+        </div>
+      )}
+      </div>
     </div>
+  );
+}
+
+export default function TextFlowEditor({ assistantId }) {
+  return (
+    <ReactFlowProvider>
+      <FlowContent assistantId={assistantId} />
+    </ReactFlowProvider>
   );
 }
