@@ -4,10 +4,11 @@
  *  Dynamic panels for any assistant/tools (audio untouched)
  * -------------------------------------------------- */
 import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
-import { Mic, CheckCircle2, Gift, AlertCircle, X } from "lucide-react";
+import { Mic, CheckCircle2, Gift, AlertCircle, X, Search } from "lucide-react";
 import { useRouter } from "next/router";
 import LeftSidebar from "./LeftSidebar";
 import { useSidebar } from "../lib/sidebarContext";
+import Image from "next/image";
 
 /* --------------------------  CONFIG  -------------------------- */
 const WS_AUDIO = process.env.NEXT_PUBLIC_WS_AUDIO || "wss://esapdev.xyz:7000/agentbuilder/ws/audio";
@@ -638,11 +639,11 @@ const ComplaintToast = () => (
 const AssistantList = ({ className = "" }) => {
   return (
     <div className={`flex h-full w-full flex-col rounded-3xl border border-white/10 bg-white/5 p-5 shadow-xl shadow-black/20 backdrop-blur-xl ${className}`}>
-      <div className="flex items-center gap-3">
-        <h3 className="text-base font-semibold text-white">Agent List</h3>
+      <div className="flex items-center gap-3 pl-2">
+        <h3 className="text-lg font-semibold text-white">Agent List</h3>
       </div>
       <div className="relative mt-4">
-        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-white/40">🔍</span>
+        <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={18} />
         <input
           value={assistantSearch}
           onChange={(e) => setAssistantSearch(e.target.value)}
@@ -671,7 +672,7 @@ const AssistantList = ({ className = "" }) => {
                   key={assistant.id}
                   type="button"
                   onClick={() => handleAssistantChange(assistant.id)}
-                  className={`group flex w-full items-center justify-between rounded-lg border px-2.5 py-2 text-left transition-all duration-200 ${
+                  className={`group flex w-full items-center justify-between rounded-xl border px-2.5 py-2 text-left transition-all duration-200 ${
                     isActive
                       ? "border-emerald-400/60 bg-emerald-500/20 shadow-md shadow-emerald-500/20"
                       : "border-white/5 bg-white/5 hover:border-emerald-400/30 hover:bg-white/10"
@@ -686,7 +687,7 @@ const AssistantList = ({ className = "" }) => {
                       {(assistant.name ?? "?").slice(0, 2).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-xs font-medium text-white truncate">
+                      <div className="text-sm font-medium text-white truncate">
                         {assistant.name || "Untitled Assistant"}
                       </div>
                     </div>
@@ -1092,8 +1093,8 @@ const PanelTabs = ({ entries, className = "" }) => {
         <div className="flex h-full flex-col">
           <main className="flex h-full flex-1 flex-col overflow-hidden items-center justify-center p-4 lg:px-16 lg:py-10">
             {/* Parent Container with margins (matching ChatInterface design) */}
-            <div className="flex flex-1 min-h-0 w-full flex-col gap-5 overflow-hidden lg:flex-row lg:items-stretch">
-              <div className="flex min-h-0 w-full flex-shrink-0 flex-col space-y-4 lg:h-full lg:max-w-[280px]">
+            <div className="flex flex-1 min-h-0 w-full max-w-[1800px] flex-col gap-5 overflow-hidden lg:flex-row lg:items-stretch">
+              <div className="flex min-h-0 w-full flex-shrink-0 flex-col space-y-4 lg:h-full lg:max-w-[360px]">
                 <div className="min-h-0 lg:flex-[0.7]">
                   <AssistantList className="h-full min-h-0" />
                 </div>
@@ -1106,8 +1107,11 @@ const PanelTabs = ({ entries, className = "" }) => {
                   <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-xl shadow-black/30 backdrop-blur-xl">
                   <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/5 px-6 py-5">
                     <div className="flex items-center gap-4">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-emerald-400/30 bg-emerald-500/10 text-emerald-200">
-                        <Mic size={18} />
+                      <div className="relative flex items-center justify-center">
+                        <div className="absolute w-[45px] h-[45px] rounded-full bg-[#13F584] opacity-20 blur-[10px]"></div>
+                        <div className="relative w-[45px] h-[45px] rounded-full bg-[rgba(19,245,132,0.1)] border border-[rgba(19,245,132,0.3)] flex items-center justify-center">
+                          <Image src="/images/ai2.svg" alt="AI Assistant" width={45} height={45} />
+                        </div>
                       </div>
                       <div>
                         <h2 className="text-lg font-semibold text-white">AI Assistance</h2>
@@ -1139,16 +1143,6 @@ const PanelTabs = ({ entries, className = "" }) => {
                         </div>
                         <span className="font-semibold text-white">Flow Mode</span>
                       </label>
-                      <div className="hidden sm:flex items-center gap-2 text-[11px] uppercase tracking-wide text-white/40">
-                        <span
-                          className={`h-2 w-2 rounded-full ${
-                            isWsConnected ? "bg-emerald-400 animate-pulse" : "bg-white/30"
-                          }`}
-                        />
-                        <span>{status}</span>
-                        {assistantId ? <span>· {assistantId.slice(0, 8)}…</span> : <span>· No assistant</span>}
-                        <span>· {currentMode || (flowEnabled ? "flow" : "direct")}</span>
-                      </div>
                       <button
                         onClick={isWsConnected ? disconnectWebSocket : connectWebSocket}
                         className={`flex items-center gap-3 rounded-2xl px-5 py-3 text-sm font-semibold transition-transform duration-200 ${
