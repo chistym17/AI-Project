@@ -753,18 +753,18 @@ const FlowHUD = ({ className = "" }) => {
     Boolean(currentMode);
 
   return (
-    <div className={`rounded-3xl border border-white/10 bg-white/5 text-white shadow-xl shadow-black/30 backdrop-blur-xl ${className}`}>
-      <div className="flex items-center gap-3 border-b border-white/5 px-4 py-3">
+    <div className={`flex flex-col h-full min-h-0 rounded-3xl border border-white/10 bg-white/5 text-white shadow-xl shadow-black/30 backdrop-blur-xl ${className}`}>
+      <div className="flex items-center gap-3 border-b border-white/5 px-4 py-3 flex-shrink-0">
         <div className={`h-2.5 w-2.5 rounded-full ${flowEnabled ? "bg-emerald-400 animate-pulse" : "bg-white/30"}`} />
         <h3 className="text-xs font-semibold uppercase tracking-wide text-white/70">Flow Monitor</h3>
       </div>
 
       {!flowEnabled ? (
-        <div className="p-4 text-center text-[11px] text-white/50">
+        <div className="p-4 text-center text-[11px] text-white/50 flex-shrink-0">
           Enable Flow Mode to track node transitions in real time.
         </div>
       ) : (
-        <div className="space-y-3 p-4 text-[11px] text-white/70">
+        <div className="flex-1 overflow-y-auto space-y-3 p-4 text-[11px] text-white/70 min-h-0">
           <div className="grid grid-cols-2 gap-3">
             <div>
               <div className="text-[10px] font-medium uppercase tracking-wide text-white/40">Current Node</div>
@@ -787,7 +787,7 @@ const FlowHUD = ({ className = "" }) => {
                 No path data yet
               </div>
             ) : (
-              <div className="max-h-36 overflow-y-auto pr-1">
+              <div className="pr-1">
                 <div className="flex flex-wrap items-center gap-1.5">
                   {nodes.map((n, i) => (
                     <React.Fragment key={i}>
@@ -1094,16 +1094,16 @@ const PanelTabs = ({ entries, className = "" }) => {
           <main className="flex h-full flex-1 flex-col overflow-hidden items-center justify-center p-4 lg:px-16 lg:py-10">
             {/* Parent Container with margins (matching ChatInterface design) */}
             <div className="flex flex-1 min-h-0 w-full max-w-[1800px] flex-col gap-5 overflow-hidden lg:flex-row lg:items-stretch">
-              <div className="flex min-h-0 w-full flex-shrink-0 flex-col space-y-4 lg:h-full lg:max-w-[360px]">
-                <div className="min-h-0 lg:flex-[0.7]">
+              <div className="flex min-h-0 w-full flex-shrink-0 flex-col space-y-4 lg:h-full lg:max-w-[360px] lg:max-h-full">
+                <div className="min-h-0 lg:flex-[0.50] lg:overflow-hidden">
                   <AssistantList className="h-full min-h-0" />
                 </div>
-                <div className="min-h-0 lg:flex-[0.4] hidden lg:block">
+                <div className="min-h-0 lg:flex-[0.50] hidden lg:block lg:overflow-hidden">
                   <FlowHUD className="h-full min-h-0" />
                 </div>
               </div>
 
-              <div className="flex min-h-0 flex-1 flex-col lg:h-full">
+              <div className="flex min-h-0 flex-1 flex-col lg:h-full lg:max-h-full">
                   <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-xl shadow-black/30 backdrop-blur-xl">
                   <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/5 px-6 py-5">
                     <div className="flex items-center gap-4">
@@ -1175,7 +1175,7 @@ const PanelTabs = ({ entries, className = "" }) => {
                     )}
                   </div>
 
-                  <div className="flex-shrink-0 border-t border-white/5 px-6 py-3">
+                  <div className="flex-shrink-0 border-t border-white/5 px-6 py-5">
                     <div className="flex flex-col items-center gap-2 text-center">
                       <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] text-white/60">
                         <span>{isWsConnected ? "Connected to voice channel" : "Connect to start streaming audio"}</span>
