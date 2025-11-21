@@ -14,7 +14,8 @@ export default function FlowChatbotPanel({
   onPreviewFlow,
   sessionId,
   isMinimized = false,
-  onToggleMinimize
+  onToggleMinimize,
+  onCloseChatbot = null
 }) {
   const [messages, setMessages] = useState([
     {
@@ -223,12 +224,22 @@ export default function FlowChatbotPanel({
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={handleClearChat}
+            onClick={async () => {
+              await handleClearChat();
+              if (onCloseChatbot) {
+                onCloseChatbot();
+              }
+            }}
             className="w-10 h-10 flex items-center justify-center rounded-xl transition-colors hover:bg-white/15 border border-white/10"
             style={{ background: "rgba(19, 245, 132, 0.08)" }}
-            title="Clear chat"
+            title="Clear & Close"
           >
-            <Trash2 className="w-4 h-4 text-white" />
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M16.0202 11.4336H3.98021C3.18688 11.4336 2.54688 10.7936 2.54688 10.0002C2.54688 9.20689 3.18688 8.56689 3.98021 8.56689H16.0202C16.8135 8.56689 17.4535 9.20689 17.4535 10.0002C17.4535 10.7936 16.8135 11.4336 16.0202 11.4336Z"
+                fill="white"
+              />
+            </svg>
           </button>
           {onToggleMinimize && (
             <button

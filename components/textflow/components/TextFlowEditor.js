@@ -82,6 +82,7 @@ function FlowContent({ assistantId }) {
   const resizeStartHeight = useRef(0);
 
   const componentDropdownOffset = consoleCollapsed ? 140 : Math.min(consoleHeight + 160, 520);
+  const chatbotBottomOffset = consoleCollapsed ? 24 : consoleHeight + 24;
   const filteredComponents = useMemo(() => {
     const query = componentSearch.trim().toLowerCase();
     if (!query) return COMPONENT_OPTIONS;
@@ -855,15 +856,27 @@ function FlowContent({ assistantId }) {
 
         {/* AI Chatbot Panel - Right Side */}
         {showChatbot && !chatbotMinimized && (
-          <div className="absolute right-0 top-0 bottom-0 w-[420px] flex-shrink-0 p-4 pl-0 z-10">
-            <FlowChatbotPanel
-              currentFlow={{ nodes, edges }}
-              onApplyFlow={handleApplyChatbotFlow}
-              onPreviewFlow={handlePreviewChatbotFlow}
-              sessionId={chatSessionId}
-              isMinimized={chatbotMinimized}
-              onToggleMinimize={() => setChatbotMinimized(!chatbotMinimized)}
-            />
+          <div
+            className="absolute right-0 top-0 w-[420px] flex-shrink-0 p-4 pl-0 z-20 pointer-events-none"
+            style={{ bottom: `${chatbotBottomOffset}px` }}
+          >
+            <div className="relative h-full">
+              <div className="absolute inset-0 rounded-[32px] bg-[#0C1118] opacity-95 shadow-[0_0_40px_rgba(0,0,0,0.45)]"></div>
+              <div className="relative h-full pointer-events-auto">
+                <FlowChatbotPanel
+                  currentFlow={{ nodes, edges }}
+                  onApplyFlow={handleApplyChatbotFlow}
+                  onPreviewFlow={handlePreviewChatbotFlow}
+                  sessionId={chatSessionId}
+                  isMinimized={chatbotMinimized}
+                  onToggleMinimize={() => setChatbotMinimized(!chatbotMinimized)}
+                  onCloseChatbot={() => {
+                    setShowChatbot(false);
+                    setChatbotMinimized(false);
+                  }}
+                />
+              </div>
+            </div>
           </div>
         )}
 
@@ -876,6 +889,10 @@ function FlowContent({ assistantId }) {
             sessionId={chatSessionId}
             isMinimized={chatbotMinimized}
             onToggleMinimize={() => setChatbotMinimized(!chatbotMinimized)}
+            onCloseChatbot={() => {
+              setShowChatbot(false);
+              setChatbotMinimized(false);
+            }}
           />
         )}
 
