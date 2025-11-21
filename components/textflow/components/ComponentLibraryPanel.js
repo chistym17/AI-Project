@@ -488,14 +488,14 @@ export default function ComponentLibraryPanel({ assistantId, nodeType, onSelectC
             <div 
               className="relative rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-auto shadow-2xl p-6 space-y-4"
               style={{
-                background: 'rgba(20, 25, 35, 0.85)',
-                backdropFilter: 'blur(8px)',
-                WebkitBackdropFilter: 'blur(8px)',
-                border: '1.5px solid rgba(255, 255, 255, 0.25)',
-                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.6)'
+                background: 'rgba(20, 25, 35, 0.65)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                border: '1.5px solid rgba(255, 255, 255, 0.2)',
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)'
               }}
             >
-              <div className="flex items-center justify-between sticky top-0 pb-4 border-b" style={{ background: 'rgba(20, 25, 35, 0.85)', borderColor: 'rgba(255, 255, 255, 0.2)' }}>
+              <div className="flex items-center justify-between sticky top-0 pb-4 border-b" style={{ background: 'rgba(20, 25, 35, 0.65)', borderColor: 'rgba(255, 255, 255, 0.15)' }}>
                 <h3 className="text-xl font-bold" style={{ color: 'rgba(255, 255, 255, 1)', fontWeight: 700 }}>Create Component</h3>
                 <button
                   onClick={() => {

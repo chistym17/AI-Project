@@ -408,10 +408,11 @@ function CreateConnectorModal({ onClose, onSubmit, assistantId }) {
       <div 
         className="relative rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-auto shadow-2xl"
         style={{
-          background: 'rgba(255, 255, 255, 0.04)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.12)'
+          background: 'rgba(20, 25, 35, 0.65)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          border: '1.5px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)'
         }}
       >
         <style dangerouslySetInnerHTML={{__html: `
@@ -455,7 +456,7 @@ function CreateConnectorModal({ onClose, onSubmit, assistantId }) {
           <div 
             className="flex items-center gap-6 border-b"
             style={{
-              borderBottomColor: 'rgba(255, 255, 255, 0.12)',
+              borderBottomColor: 'rgba(255, 255, 255, 0.15)',
               borderBottomWidth: '1px'
             }}
           >
@@ -495,8 +496,8 @@ function CreateConnectorModal({ onClose, onSubmit, assistantId }) {
                 placeholder="Slack API"
                 className="w-full px-2 py-1.5 rounded-lg text-xs transition-colors focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 style={{
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  background: 'rgba(255, 255, 255, 0.12)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
                   color: 'rgba(255, 255, 255, 1)',
                   fontWeight: 500
                 }}
@@ -513,8 +514,8 @@ function CreateConnectorModal({ onClose, onSubmit, assistantId }) {
                 rows={2}
                 className="w-full px-2 py-1.5 rounded-lg text-xs transition-colors resize-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 style={{
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  background: 'rgba(255, 255, 255, 0.12)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
                   color: 'rgba(255, 255, 255, 1)',
                   fontWeight: 500
                 }}
@@ -529,8 +530,8 @@ function CreateConnectorModal({ onClose, onSubmit, assistantId }) {
                 onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
                 className="w-full px-2 py-1.5 rounded-lg text-xs transition-colors focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-left flex items-center justify-between"
                 style={{
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  background: 'rgba(255, 255, 255, 0.12)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
                   color: 'rgba(255, 255, 255, 1)',
                   fontWeight: 500
                 }}
@@ -581,8 +582,8 @@ function CreateConnectorModal({ onClose, onSubmit, assistantId }) {
                 placeholder="slack, messaging, api"
                 className="w-full px-2 py-1.5 rounded-lg text-xs transition-colors focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 style={{
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  background: 'rgba(255, 255, 255, 0.12)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
                   color: 'rgba(255, 255, 255, 1)',
                   fontWeight: 500
                 }}
@@ -597,8 +598,8 @@ function CreateConnectorModal({ onClose, onSubmit, assistantId }) {
               <div 
                 className="rounded-lg overflow-hidden"
                 style={{
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  background: 'rgba(255, 255, 255, 0.12)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
                   borderRadius: '8px'
                 }}
               >
