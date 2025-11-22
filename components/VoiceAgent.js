@@ -640,7 +640,7 @@ const AssistantList = ({ className = "" }) => {
   return (
     <div className={`flex h-full w-full flex-col rounded-3xl border border-white/10 bg-white/5 p-5 shadow-xl shadow-black/20 backdrop-blur-xl ${className}`}>
       <div className="flex items-center gap-3 pl-2">
-        <h3 className="text-sm font-semibold text-white">Agent List</h3>
+                        <h3 className="text-sm font-medium text-white">Agent List</h3>
       </div>
       <div className="relative mt-4">
         <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={16} />
@@ -672,10 +672,10 @@ const AssistantList = ({ className = "" }) => {
                   key={assistant.id}
                   type="button"
                   onClick={() => handleAssistantChange(assistant.id)}
-                  className={`group flex w-full items-center justify-between rounded-xl border px-2 py-1.5 text-left transition-all duration-200 ${
+                  className={`group flex w-full items-center justify-between rounded-xl px-2 py-1.5 text-left transition-all duration-200 ${
                     isActive
-                      ? "border-emerald-400/60 bg-emerald-500/20 shadow-md shadow-emerald-500/20"
-                      : "border-white/5 bg-white/5 hover:border-emerald-400/30 hover:bg-white/10"
+                      ? "bg-emerald-500/20 shadow-md shadow-emerald-500/20"
+                      : "bg-white/5 hover:bg-white/10"
                   }`}
                 >
                   <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -687,7 +687,9 @@ const AssistantList = ({ className = "" }) => {
                       {(assistant.name ?? "?").slice(0, 2).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-[10px] font-medium text-white truncate">
+                      <div className={`text-[10px] font-medium truncate ${
+                        isActive ? "text-[#00A76F]" : "text-white"
+                      }`}>
                         {assistant.name || "Untitled Assistant"}
                       </div>
                     </div>
@@ -760,30 +762,30 @@ const FlowHUD = ({ className = "" }) => {
       </div>
 
       {!flowEnabled ? (
-        <div className="p-4 text-center text-[10px] text-white/50 flex-shrink-0">
+        <div className="p-4 text-center text-[8px] text-white/50 flex-shrink-0">
           Enable Flow Mode to track node transitions in real time.
         </div>
       ) : (
-        <div className="flex-1 overflow-y-auto space-y-3 p-4 text-[10px] text-white/70 min-h-0">
+        <div className="flex-1 overflow-y-auto space-y-3 p-4 text-[9px] text-white/70 min-h-0">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <div className="text-[9px] font-medium uppercase tracking-wide text-white/40">Current Node</div>
-              <div className="mt-1 text-[10px] font-semibold text-white truncate">
+              <div className="text-[8px] font-medium uppercase tracking-wide text-white/40">Current Node</div>
+              <div className="mt-1 text-[9px] font-semibold text-white truncate">
                 {flowCurrent?.title || flowCurrent?.id || "—"}
               </div>
             </div>
             <div>
-              <div className="text-[9px] font-medium uppercase tracking-wide text-white/40">Mode</div>
-              <div className="mt-1 text-[10px] font-semibold text-white">
+              <div className="text-[8px] font-medium uppercase tracking-wide text-white/40">Mode</div>
+              <div className="mt-1 text-[9px] font-semibold text-white">
                 {currentMode || (flowEnabled ? "flow" : "direct")}
               </div>
             </div>
           </div>
 
           <div>
-            <div className="mb-1.5 text-[9px] font-medium uppercase tracking-wide text-white/40">Recent Path</div>
+            <div className="mb-1.5 text-[8px] font-medium uppercase tracking-wide text-white/40">Recent Path</div>
             {!nodes.length ? (
-              <div className="rounded-xl border border-white/10 bg-white/5 py-1.5 px-2 text-center text-[8px] text-white/40">
+              <div className="rounded-xl border border-white/10 bg-white/5 py-1 px-1.5 text-center text-[7px] text-white/40">
                 No path data yet
               </div>
             ) : (
@@ -792,7 +794,7 @@ const FlowHUD = ({ className = "" }) => {
                   {nodes.map((n, i) => (
                     <React.Fragment key={i}>
                       <span
-                        className={`rounded-full px-2 py-0.5 text-[9px] font-medium transition-all duration-200 border ${
+                        className={`rounded-full px-1.5 py-0.5 text-[8px] font-medium transition-all duration-200 border ${
                           i === nodes.length - 1
                             ? "border-blue-300/60 bg-blue-500/20 text-blue-100"
                             : "border-emerald-300/60 bg-emerald-500/15 text-emerald-100"
@@ -800,7 +802,7 @@ const FlowHUD = ({ className = "" }) => {
                       >
                         {n}
                       </span>
-                      {i < nodes.length - 1 && <span className="text-white/60 text-[10px]">→</span>}
+                      {i < nodes.length - 1 && <span className="text-white/60 text-[8px]">→</span>}
                     </React.Fragment>
                   ))}
                 </div>
@@ -809,9 +811,9 @@ const FlowHUD = ({ className = "" }) => {
           </div>
 
           <div>
-            <div className="mb-1.5 text-[9px] font-medium uppercase tracking-wide text-white/40">Functions</div>
+            <div className="mb-1.5 text-[8px] font-medium uppercase tracking-wide text-white/40">Functions</div>
           {!funcs.length ? (
-            <div className="rounded-xl border border-white/10 bg-white/5 py-1.5 px-2 text-center text-[8px] text-white/40">
+            <div className="rounded-xl border border-white/10 bg-white/5 py-1 px-1.5 text-center text-[7px] text-white/40">
               No functions registered
             </div>
           ) : (
@@ -819,7 +821,7 @@ const FlowHUD = ({ className = "" }) => {
                 {funcs.map((f, idx) => (
                   <span
                     key={f}
-                    className="rounded-full border border-emerald-400/40 bg-emerald-500/20 px-2 py-0.5 text-[9px] text-emerald-100"
+                    className="rounded-full border border-emerald-400/40 bg-emerald-500/20 px-1.5 py-0.5 text-[8px] text-emerald-100"
                     style={{ animationDelay: `${idx * 50}ms` }}
                   >
                     {f}
@@ -830,7 +832,7 @@ const FlowHUD = ({ className = "" }) => {
           </div>
 
           {!hasActivity && (
-            <div className="rounded-xl border border-white/10 bg-white/5 py-1.5 px-2 text-center text-[8px] text-white/50">
+            <div className="rounded-xl border border-white/10 bg-white/5 py-1 px-1.5 text-center text-[7px] text-white/50">
               Flow activity will appear here once the conversation starts.
             </div>
           )}
@@ -1114,7 +1116,7 @@ const PanelTabs = ({ entries, className = "" }) => {
                         </div>
                       </div>
                       <div>
-                        <h2 className="text-sm font-semibold text-white">AI Assistance</h2>
+                        <h2 className="text-sm font-medium text-white">AI Assistance</h2>
                         <p className="text-[10px] text-white/50">
                           Connect, monitor, and collaborate with your live voice agent.
                         </p>
@@ -1130,22 +1132,23 @@ const PanelTabs = ({ entries, className = "" }) => {
                             className="peer sr-only"
                           />
                           <div
-                            className={`flex h-5 w-9 items-center rounded-full transition-colors duration-200 ${
-                              flowEnabled ? "bg-emerald-500/80" : "bg-white/20"
+                            className={`flex h-4 w-7 items-center rounded-full transition-colors duration-200 ${
+                              flowEnabled ? "bg-[#00A76F]" : "bg-white/20"
                             }`}
+                            style={flowEnabled ? { backgroundColor: '#00A76F' } : {}}
                           >
                             <div
-                              className={`ml-0.5 h-4 w-4 rounded-full bg-white transition-transform duration-200 ${
-                                flowEnabled ? "translate-x-4" : ""
+                              className={`ml-0.5 h-3 w-3 rounded-full bg-white transition-transform duration-200 ${
+                                flowEnabled ? "translate-x-3" : ""
                               }`}
                             />
                           </div>
                         </div>
-                        <span className="font-semibold text-white">Flow Mode</span>
+                        <span className="font-medium text-white">Flow Mode</span>
                       </label>
                       <button
                         onClick={isWsConnected ? disconnectWebSocket : connectWebSocket}
-                        className={`h-[30px] px-2 flex items-center justify-center gap-2 rounded-lg font-bold text-[13px] transition-all duration-200 ${
+                        className={`h-[30px] px-2 flex items-center justify-center gap-2 rounded-lg font-medium text-[13px] transition-all duration-200 ${
                           isWsConnected
                             ? "bg-emerald-500/80 text-white shadow-lg shadow-emerald-500/30 hover:bg-emerald-500"
                             : "bg-white/10 text-white/80 hover:bg-white/20"
@@ -1189,12 +1192,25 @@ const PanelTabs = ({ entries, className = "" }) => {
                         className={`relative flex h-16 w-16 items-center justify-center rounded-full border-[3px] transition-all duration-300 ${
                           isRec
                             ? "border-red-400/80 bg-red-500/25 shadow-xl shadow-red-500/30"
-                            : "border-emerald-400/60 bg-emerald-500/15 hover:border-emerald-300 hover:bg-emerald-400/20"
+                            : "bg-[rgba(0,167,111,0.15)] hover:bg-[rgba(0,167,111,0.20)]"
                         }`}
+                        style={!isRec ? { 
+                          borderColor: 'rgba(0, 167, 111, 0.6)'
+                        } : {}}
+                        onMouseEnter={(e) => {
+                          if (!isRec) {
+                            e.currentTarget.style.borderColor = 'rgba(0, 167, 111, 0.8)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isRec) {
+                            e.currentTarget.style.borderColor = 'rgba(0, 167, 111, 0.6)';
+                          }
+                        }}
                       >
                         <div
                           className={`flex h-12 w-12 items-center justify-center rounded-full ${
-                            isRec ? "bg-red-500/60" : "bg-emerald-500/25"
+                            isRec ? "bg-red-500/60" : "bg-[rgba(0,167,111,0.25)]"
                           }`}
                         >
                           <Mic size={14} className={isRec ? "animate-pulse" : ""} />

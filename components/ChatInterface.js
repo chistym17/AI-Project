@@ -16,6 +16,9 @@ const ChatInterface = () => {
   const [ws, setWs] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState(null);
+  const [isLoadingSession, setIsLoadingSession] = useState(false);
+  const [loadingSessionType, setLoadingSessionType] = useState(null); // 'new' or 'previous'
+  const isLoadingSessionRef = useRef(false);
   const { assistantId, setAssistant } = useAssistant();
   
   // Assistant list state
@@ -43,7 +46,10 @@ const ChatInterface = () => {
 
     websocket.onopen = () => {
       console.log('Connected to chat WebSocket', sessionId ? `with session: ${sessionId}` : 'reusing previous session');
+      isLoadingSessionRef.current = false;
       setIsConnected(true);
+      setIsLoadingSession(false);
+      setLoadingSessionType(null);
       setWs(websocket);
       if (sessionId) {
         setCurrentSessionId(sessionId);
@@ -102,13 +108,21 @@ const ChatInterface = () => {
     websocket.onclose = () => {
       console.log('Disconnected from chat WebSocket');
       setIsConnected(false);
+      // Only reset loading state if we're not actively loading a session
+      // This prevents the header from disappearing during reconnection
+      if (!isLoadingSessionRef.current) {
+        setIsLoadingSession(false);
+      }
       setStreamingMessage(null);
       setWs(null);
     };
 
     websocket.onerror = (error) => {
       console.error('WebSocket error:', error);
+      isLoadingSessionRef.current = false;
       setIsConnected(false);
+      setIsLoadingSession(false);
+      setLoadingSessionType(null);
       setStreamingMessage(null);
     };
 
@@ -116,6 +130,9 @@ const ChatInterface = () => {
   };
 
   const startNewSession = () => {
+    isLoadingSessionRef.current = true;
+    setIsLoadingSession(true);
+    setLoadingSessionType('new');
     const newSessionId = `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     setMessages([]);
     setStreamingMessage(null);
@@ -123,6 +140,9 @@ const ChatInterface = () => {
   };
 
   const loadPreviousSession = () => {
+    isLoadingSessionRef.current = true;
+    setIsLoadingSession(true);
+    setLoadingSessionType('previous');
     setMessages([]);
     setStreamingMessage(null);
     setCurrentSessionId(null);
@@ -169,6 +189,13 @@ const ChatInterface = () => {
   useEffect(() => {
     let websocket = null;
     let reconnectTimeout = null;
+
+    // Set loading state when assistant changes
+    if (assistantId) {
+      isLoadingSessionRef.current = true;
+      setIsLoadingSession(true);
+      setLoadingSessionType('previous');
+    }
 
     const initialConnect = () => {
       websocket = connectWebSocket();
@@ -220,7 +247,7 @@ const ChatInterface = () => {
               <div className="flex min-h-0 w-full flex-shrink-0 flex-col lg:h-full lg:max-w-[280px]">
                 <div className="flex h-full w-full flex-col rounded-3xl border border-white/10 bg-white/5 p-5 shadow-xl shadow-black/20 backdrop-blur-xl">
                   <div className="flex items-center gap-3 pl-2">
-                    <h3 className="text-sm font-semibold text-white">Agent List</h3>
+                    <h3 className="text-sm font-medium text-white">Agent List</h3>
                   </div>
                   <div className="relative mt-4">
                     <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={16} />
@@ -252,10 +279,10 @@ const ChatInterface = () => {
                               key={assistant.id}
                               type="button"
                               onClick={() => handleAssistantChange(assistant.id)}
-                              className={`group flex w-full items-center justify-between rounded-xl border px-2 py-1.5 text-left transition-all duration-200 ${
+                              className={`group flex w-full items-center justify-between rounded-xl px-2 py-1.5 text-left transition-all duration-200 ${
                                 isActive
-                                  ? "border-emerald-400/60 bg-emerald-500/20 shadow-md shadow-emerald-500/20"
-                                  : "border-white/5 bg-white/5 hover:border-emerald-400/30 hover:bg-white/10"
+                                  ? "bg-emerald-500/20 shadow-md shadow-emerald-500/20"
+                                  : "bg-white/5 hover:bg-white/10"
                               }`}
                             >
                               <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -267,7 +294,9 @@ const ChatInterface = () => {
                                   {(assistant.name ?? "?").slice(0, 2).toUpperCase()}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <div className="text-[10px] font-medium text-white truncate">
+                                  <div className={`text-[10px] font-medium truncate ${
+                                    isActive ? "text-[#00A76F]" : "text-white"
+                                  }`}>
                                     {assistant.name || "Untitled Assistant"}
                                   </div>
                                 </div>
@@ -306,6 +335,8 @@ const ChatInterface = () => {
                   onStartNewSession={startNewSession}
                   onLoadPreviousSession={loadPreviousSession}
                   currentSessionId={currentSessionId}
+                  isLoadingSession={isLoadingSession}
+                  loadingSessionType={loadingSessionType}
                 />
               </div>
             </div>

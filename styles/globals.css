@@ -29,6 +29,7 @@ html, body, #__next {
 }
 :root {
   color-scheme: dark;
+  --sidebar-active-green: #00A76F;
 }
 body {
   background-color: #141A21;
