@@ -1088,10 +1088,10 @@ const PanelTabs = ({ entries, className = "" }) => {
       
       <div
         className="relative flex h-full flex-col overflow-hidden"
-        style={{ marginLeft: isCollapsed ? "56px" : "176px" }}
+        style={{ marginLeft: isCollapsed ? "56px" : "105px" }}
       >
         <div className="flex h-full flex-col">
-          <main className="flex h-full flex-1 flex-col overflow-hidden items-center justify-center p-4 lg:px-16 lg:py-10">
+          <main className="flex h-full flex-1 flex-col overflow-hidden items-center justify-center p-4 lg:pl-8 lg:pr-16 lg:pt-6 lg:pb-10">
             {/* Parent Container with margins (matching ChatInterface design) */}
             <div className="flex flex-1 min-h-0 w-full max-w-[1800px] flex-col gap-5 overflow-hidden lg:flex-row lg:items-stretch">
               <div className="flex min-h-0 w-full flex-shrink-0 flex-col space-y-4 lg:h-full lg:max-w-[280px] lg:max-h-full">
@@ -1145,16 +1145,17 @@ const PanelTabs = ({ entries, className = "" }) => {
                       </label>
                       <button
                         onClick={isWsConnected ? disconnectWebSocket : connectWebSocket}
-                        className={`flex items-center gap-3 rounded-2xl px-5 py-3 text-xs font-semibold transition-transform duration-200 ${
+                        className={`h-[30px] px-2 flex items-center justify-center gap-2 rounded-lg font-bold text-[13px] transition-all duration-200 ${
                           isWsConnected
                             ? "bg-emerald-500/80 text-white shadow-lg shadow-emerald-500/30 hover:bg-emerald-500"
                             : "bg-white/10 text-white/80 hover:bg-white/20"
                         }`}
+                        style={{ fontFamily: 'Public Sans, sans-serif', lineHeight: '1.6923076923076923em' }}
                         disabled={loadingAssistant || !assistantId || !sessionId || isConnecting}
                         title={!sessionId ? "Resolving session..." : ""}
                       >
                         {isConnecting && (
-                          <div className="h-4 w-4 rounded-full border-2 border-white/60 border-t-transparent animate-spin" />
+                          <div className="h-3 w-3 rounded-full border-2 border-white/60 border-t-transparent animate-spin" />
                         )}
                         <span>{isConnecting ? "Connecting…" : isWsConnected ? "Disconnect" : "Connect"}</span>
                       </button>
