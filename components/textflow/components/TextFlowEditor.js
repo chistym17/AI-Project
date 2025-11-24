@@ -27,6 +27,76 @@ const MINIBAR_ICONS = {
   aiActive: "/textflow-icons/textflow_btn_hover.png",
 };
 
+// Helper function to get Figma-style gradient and border for component icons
+const getComponentIconStyle = (type) => {
+  const styles = {
+    start: {
+      // Emerald/Teal
+      background: 'rgba(16, 185, 129, 0.1)',
+      borderColor: '#10B981',
+      borderWidth: '1.17px',
+      iconColor: '#10B981'
+    },
+    trigger: {
+      // Sky/Blue
+      background: 'rgba(0, 184, 217, 0.1)',
+      borderColor: '#00B8D9',
+      borderWidth: '1.17px',
+      iconColor: '#00B8D9'
+    },
+    http: {
+      // Yellow/Amber/Orange
+      background: 'rgba(255, 171, 0, 0.1)',
+      borderColor: '#FFAB00',
+      borderWidth: '0.39px',
+      iconColor: '#FFAB00'
+    },
+    llm: {
+      // Pink/Rose/Fuchsia
+      background: 'rgba(247, 28, 182, 0.1)',
+      borderColor: '#F71CB6',
+      borderWidth: '1.17px',
+      iconColor: '#F71CB6'
+    },
+    transform: {
+      // Purple/Violet/Indigo
+      background: 'rgba(139, 92, 246, 0.1)',
+      borderColor: '#8B5CF6',
+      borderWidth: '1.17px',
+      iconColor: '#8B5CF6'
+    },
+    conditional: {
+      // Cyan/Blue/Indigo
+      background: 'rgba(6, 182, 212, 0.1)',
+      borderColor: '#06B6D4',
+      borderWidth: '1.17px',
+      iconColor: '#06B6D4'
+    },
+    parallel: {
+      // Fuchsia/Purple/Blue
+      background: 'rgba(217, 70, 239, 0.1)',
+      borderColor: '#D946EF',
+      borderWidth: '1.17px',
+      iconColor: '#D946EF'
+    },
+    wait: {
+      // Slate
+      background: 'rgba(100, 116, 139, 0.1)',
+      borderColor: '#64748B',
+      borderWidth: '1.17px',
+      iconColor: '#64748B'
+    },
+    subflow: {
+      // Teal/Emerald/Green
+      background: 'rgba(20, 184, 166, 0.1)',
+      borderColor: '#14B8A6',
+      borderWidth: '1.17px',
+      iconColor: '#14B8A6'
+    }
+  };
+  return styles[type] || styles.transform;
+};
+
 const COMPONENT_OPTIONS = [
   { type: "start", label: "Start", description: "Entry point for every flow", icon: Play, accent: "from-emerald-400/90 via-emerald-500 to-teal-500" },
   { type: "trigger", label: "Trigger", description: "Listen for channel activity", icon: Target, accent: "from-sky-400/90 via-sky-500 to-blue-500" },
@@ -1165,97 +1235,184 @@ function FlowContent({ assistantId }) {
           />
 
           <div
-            className="relative pointer-events-auto w-full max-w-[520px] px-4"
+            className="relative pointer-events-auto w-full max-w-[440px] px-4"
           >
             <div
-              className="rounded-3xl border border-white/12 bg-white/5 backdrop-blur-2xl shadow-[0_20px_80px_rgba(0,0,0,0.45)]"
+              className="rounded-[24px]"
+              style={{
+                background: 'rgba(255, 255, 255, 0.04)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.12)',
+                boxShadow: '0 20px 80px rgba(0, 0, 0, 0.45)',
+                height: '450px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '10px'
+              }}
             >
-              <div className="flex flex-col gap-3 p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-white">Components</p>
-                  </div>
-                  <button
-                    onClick={() => setShowComponentModal(false)}
-                    className="h-8 w-8 rounded-full border border-white/10 text-white/70 hover:text-white hover:border-white/30 transition-colors flex items-center justify-center"
-                    title="Close"
+              {/* Header Section */}
+              <div
+                className="w-full flex items-center justify-between"
+                style={{ padding: '16px', gap: '32px' }}
+              >
+                <div className="flex-1">
+                  <p 
+                    className="text-white"
+                    style={{
+                      fontFamily: 'Public Sans, sans-serif',
+                      fontWeight: 600,
+                      fontSize: '16px',
+                      lineHeight: '1.5em',
+                      textTransform: 'uppercase'
+                    }}
                   >
-                    <span className="sr-only">Close</span>
-                    <X className="h-4 w-4" />
-                  </button>
+                    Components
+                  </p>
                 </div>
+              </div>
 
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/40" />
+              {/* Search Section */}
+              <div
+                className="w-full"
+                style={{ padding: '0px 16px', gap: '24px', display: 'flex', flexDirection: 'column' }}
+              >
+                <div 
+                  className="w-full flex items-center"
+                  style={{
+                    borderRadius: '8px',
+                    borderColor: 'rgba(145, 158, 171, 0.2)',
+                    borderWidth: '1px',
+                    borderStyle: 'solid',
+                    background: 'rgba(255, 255, 255, 0.04)',
+                    padding: '0px 14px',
+                    height: '40px'
+                  }}
+                >
+                  <div className="flex items-center" style={{ padding: '0px 8px 0px 0px' }}>
+                    <Search className="h-4 w-4 text-white/40" />
+                  </div>
                   <input
                     type="text"
                     value={componentSearch}
                     onChange={(e) => setComponentSearch(e.target.value)}
-                    placeholder="Search components"
-                    className="w-full rounded-2xl border border-white/10 bg-white/5 py-2.5 pl-10 pr-3 text-xs text-white placeholder:text-white/40 focus:outline-none focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20"
+                    placeholder="Search"
+                    className="flex-1 border-0 bg-transparent text-white placeholder:text-white/40 focus:outline-none"
+                    style={{
+                      fontFamily: 'Public Sans, sans-serif',
+                      fontWeight: 400,
+                      fontSize: '13px',
+                      lineHeight: '1.4666666666666666em',
+                      padding: 0
+                    }}
                   />
                 </div>
+              </div>
 
-                <div
-                  className="component-scroll max-h-[360px] overflow-y-auto pr-1 space-y-1.5"
-                  style={{ scrollbarWidth: "thin" }}
-                >
-                  {filteredComponents.length === 0 && (
-                    <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 p-5 text-center text-xs text-white/60">
-                      No components match “{componentSearch}”.
-                    </div>
-                  )}
+              {/* Component List */}
+              <div
+                className="component-scroll w-full overflow-y-auto"
+                style={{
+                  padding: '0px 16px',
+                  gap: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '305px'
+                }}
+              >
+                {filteredComponents.length === 0 && (
+                  <div 
+                    className="rounded-2xl border border-dashed bg-white/5 p-5 text-center text-white/60"
+                    style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
+                  >
+                    <p style={{ fontSize: '11px' }}>No components match "{componentSearch}".</p>
+                  </div>
+                )}
 
-                  {filteredComponents.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <button
-                        key={item.type}
-                        onClick={() => {
-                          const id = `${item.type}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-                          const existingNodes = nodes.length;
-                          const x = 100 + (existingNodes % 3) * 280;
-                          const y = 100 + Math.floor(existingNodes / 3) * 160;
+                {filteredComponents.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.type}
+                      onClick={() => {
+                        const id = `${item.type}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+                        const existingNodes = nodes.length;
+                        const x = 100 + (existingNodes % 3) * 280;
+                        const y = 100 + Math.floor(existingNodes / 3) * 160;
 
-                          const node = {
-                            id,
-                            type: item.type,
-                            position: { x, y },
-                            data: {
-                              label: item.label,
-                              config: {}
-                            }
-                          };
-
-                          setNodes([...nodes, node]);
-                          tf.setSelection(id);
-
-                          if (!tf.flow.entryNodeId || item.type === "start") {
-                            tf.setFlow({ entryNodeId: id });
+                        const node = {
+                          id,
+                          type: item.type,
+                          position: { x, y },
+                          data: {
+                            label: item.label,
+                            config: {}
                           }
+                        };
 
-                          tf.appendConsole({
-                            ts: Date.now(),
-                            kind: "info",
-                            text: `Added ${item.type} node`
-                          });
+                        setNodes([...nodes, node]);
+                        tf.setSelection(id);
 
-                          setComponentSearch("");
-                          setShowComponentModal(false);
+                        if (!tf.flow.entryNodeId || item.type === "start") {
+                          tf.setFlow({ entryNodeId: id });
+                        }
+
+                        tf.appendConsole({
+                          ts: Date.now(),
+                          kind: "info",
+                          text: `Added ${item.type} node`
+                        });
+
+                        setComponentSearch("");
+                        setShowComponentModal(false);
+                      }}
+                      className="w-full flex items-center text-left"
+                      style={{ gap: '7px' }}
+                    >
+                      <div 
+                        className="flex items-center justify-center relative"
+                        style={{
+                          width: '56px',
+                          padding: '9.33px',
+                          borderRadius: '12.44px',
+                          backdropFilter: 'blur(38.89px)',
+                          background: getComponentIconStyle(item.type).background,
+                          border: `${getComponentIconStyle(item.type).borderWidth} solid ${getComponentIconStyle(item.type).borderColor}`
                         }}
-                        className="w-full flex items-center gap-3 rounded-2xl bg-white/5 p-3 text-left transition-all hover:bg-white/10"
                       >
-                        <div className={`h-11 w-11 rounded-2xl bg-gradient-to-br ${item.accent} flex items-center justify-center shadow-lg shadow-black/30`}>
-                          <Icon className="h-5 w-5 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-[13px] font-medium text-white">{item.label}</p>
-                          <p className="text-[11px] text-white/60">{item.description}</p>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
+                        <Icon 
+                          className="h-4 w-4" 
+                          style={{ color: getComponentIconStyle(item.type).iconColor }}
+                        />
+                      </div>
+                      <div className="flex-1 flex flex-col" style={{ gap: '4px' }}>
+                        <p 
+                          className="text-white"
+                          style={{
+                            fontFamily: 'Public Sans, sans-serif',
+                            fontWeight: 600,
+                            fontSize: '12px',
+                            lineHeight: '1.5714285714285714em'
+                          }}
+                        >
+                          {item.label}
+                        </p>
+                        <p 
+                          style={{
+                            fontFamily: 'Public Sans, sans-serif',
+                            fontWeight: 400,
+                            fontSize: '11px',
+                            lineHeight: '1.5em',
+                            color: '#919EAB'
+                          }}
+                        >
+                          {item.description}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -1263,21 +1420,23 @@ function FlowContent({ assistantId }) {
             dangerouslySetInnerHTML={{
               __html: `
                 .component-scroll::-webkit-scrollbar {
-                  width: 6px;
+                  width: 4px;
                 }
                 .component-scroll::-webkit-scrollbar-track {
                   background: transparent;
+                  margin: 28px 0;
+                  border-radius: 999px;
                 }
                 .component-scroll::-webkit-scrollbar-thumb {
-                  background: rgba(255,255,255,0.2);
+                  background: #454F5B;
                   border-radius: 999px;
-                  border-top: 10px solid transparent;
-                  border-bottom: 10px solid transparent;
+                  border-top: 14px solid transparent;
+                  border-bottom: 14px solid transparent;
                   background-clip: padding-box;
-                  min-height: 24px;
+                  min-height: 28px;
                 }
                 .component-scroll::-webkit-scrollbar-thumb:hover {
-                  background: rgba(255,255,255,0.35);
+                  background: #5a6673;
                 }
               `,
             }}

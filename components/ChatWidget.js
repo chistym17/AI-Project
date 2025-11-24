@@ -104,7 +104,7 @@ const ChatWidget = ({ messages, onSendMessage, isTyping, isConnected, streamingM
               <div className="flex flex-col items-center gap-3">
                 <div className="h-8 w-8 rounded-full border-2 border-emerald-400/30 border-t-emerald-400 animate-spin"></div>
                 <p className="text-xs text-white/60 text-center">
-                  {loadingSessionType === 'new' ? 'Loading new session...' : 'Loading previous session...'}
+                  {loadingSessionType === 'new' ? 'Loading new session...' : loadingSessionType === 'agent' ? 'Switching agent...' : 'Loading previous session...'}
                 </p>
               </div>
             </div>

@@ -194,7 +194,7 @@ const ChatInterface = () => {
     if (assistantId) {
       isLoadingSessionRef.current = true;
       setIsLoadingSession(true);
-      setLoadingSessionType('previous');
+      setLoadingSessionType('agent');
     }
 
     const initialConnect = () => {
