@@ -312,20 +312,19 @@ export default function CredentialsPanel({ assistantId }) {
           scrollbar-width: thin;
           scrollbar-color: #404040 #1a1a1a;
         }
+        select option {
+          background: rgba(20, 25, 35, 0.95);
+          color: white;
+        }
       `}</style>
       
       {/* Header */}
-      <div className="flex-none px-6 py-4 border-b border-white/10">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
-              <Key className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-base font-semibold text-white">Credentials</h2>
-              <p className="text-xs text-gray-400">{credentials.length} stored</p>
-            </div>
-          </div>
+      <div className="px-6 py-3 border-b border-white/10 flex items-center justify-between">
+        <div>
+          <h2 className="text-base font-semibold text-white/90 leading-tight">Credentials</h2>
+          <p className="text-[10px] text-white/50">Manage authentication credentials</p>
+        </div>
+        <div className="flex items-center gap-2">
           <button
             onClick={() => {
               setShowCreate(!showCreate);
@@ -333,16 +332,19 @@ export default function CredentialsPanel({ assistantId }) {
               setSuccess("");
               if (showCreate) resetForm();
             }}
-            className="h-9 px-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg text-sm font-medium transition-all flex items-center gap-2"
+            className="px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all text-center"
+            style={{
+              color: "#9EFBCD",
+              background: "rgba(19, 245, 132, 0.08)",
+            }}
           >
-            {showCreate ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-            {showCreate ? "Cancel" : "New"}
+            New Credential
           </button>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3 custom-scrollbar">
+      <div className={`flex-1 px-6 py-4 space-y-3 ${credentials.length > 0 || showCreate ? 'overflow-y-auto custom-scrollbar' : 'overflow-hidden'}`}>
         {/* Alerts */}
         {error && (
           <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 flex items-start gap-3">
@@ -364,30 +366,33 @@ export default function CredentialsPanel({ assistantId }) {
         {/* Create Form */}
         {showCreate && (
           <div 
-            className="rounded-2xl p-5 space-y-4 border"
+            className="rounded-2xl p-3 space-y-2.5 border"
             style={{
               background: 'rgba(255, 255, 255, 0.06)',
               borderColor: 'rgba(255, 255, 255, 0.12)'
             }}
           >
-            <div className="flex items-center gap-3 pb-3 border-b border-white/10">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
-                <TypeIcon className="w-5 h-5 text-white" />
+            <div className="flex items-center gap-2 pb-2 border-b border-white/10">
+              <div
+                className="w-6 h-6 rounded-xl flex items-center justify-center border border-white/10"
+                style={{ background: "rgba(255, 255, 255, 0.04)" }}
+              >
+                <TypeIcon className="w-3.5 h-3.5 text-white/80" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-white">New Credential</h3>
-                <p className="text-xs text-gray-400">Securely store authentication details</p>
+                <h3 className="text-[11px] font-semibold text-white/90">New Credential</h3>
+                <p className="text-[9px] text-white/50">Securely store authentication details</p>
               </div>
             </div>
 
             {/* Name */}
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-400">Name</label>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-medium text-gray-400">Name</label>
               <input
                 type="text"
                 value={newCred.name}
                 onChange={(e) => setNewCred({...newCred, name: e.target.value})}
-                className="w-full h-10 px-3 rounded-lg text-sm text-white placeholder-gray-500 transition-colors focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                className="w-full h-8 px-2.5 rounded-lg text-[11px] text-white placeholder-gray-500 transition-colors focus:outline-none"
                 style={{
                   background: 'rgba(255, 255, 255, 0.08)',
                   border: '1px solid rgba(255, 255, 255, 0.12)'
@@ -397,15 +402,15 @@ export default function CredentialsPanel({ assistantId }) {
             </div>
 
             {/* Type Selector */}
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-gray-400">Type</label>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-medium text-gray-400">Type</label>
               <div className="relative">
                 <select
                   value={newCred.type}
                   onChange={(e) => handleTypeChange(e.target.value)}
-                  className="w-full h-10 pl-10 pr-10 rounded-lg text-sm text-white appearance-none transition-colors cursor-pointer focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  className="w-full h-8 pl-8 pr-8 rounded-lg text-[11px] text-white appearance-none transition-colors cursor-pointer focus:outline-none"
                   style={{
-                    background: 'rgba(17, 24, 39, 0.9)',
+                    background: 'rgba(20, 25, 35, 0.6)',
                     border: '1px solid rgba(255, 255, 255, 0.12)'
                   }}
                 >
@@ -413,23 +418,23 @@ export default function CredentialsPanel({ assistantId }) {
                     <option key={type.value} value={type.value}>{type.label}</option>
                   ))}
                 </select>
-                <TypeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                <TypeIcon className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
+                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500 pointer-events-none" />
               </div>
-              <p className="text-xs text-gray-600">{selectedType?.description}</p>
+              <p className="text-[9px] text-gray-600">{selectedType?.description}</p>
             </div>
 
             {/* API Key Fields */}
             {newCred.type === "api_key" && (
               <>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium text-gray-400">Key Name</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-medium text-gray-400">Key Name</label>
                     <input
                       type="text"
                       value={newCred.data.key_name || ""}
                       onChange={(e) => updateCredData("key_name", e.target.value)}
-                      className="w-full h-10 px-3 rounded-lg text-sm text-white placeholder-gray-500 transition-colors focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      className="w-full h-8 px-2.5 rounded-lg text-[11px] text-white placeholder-gray-500 transition-colors focus:outline-none"
                 style={{
                   background: 'rgba(255, 255, 255, 0.08)',
                   border: '1px solid rgba(255, 255, 255, 0.12)'
@@ -437,25 +442,29 @@ export default function CredentialsPanel({ assistantId }) {
                       placeholder="X-API-Key"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-medium text-gray-400">Location</label>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-medium text-gray-400">Location</label>
                     <select
                       value={newCred.data.location || "header"}
                       onChange={(e) => updateCredData("location", e.target.value)}
-                      className="w-full h-10 px-3 bg-gray-950 border border-gray-800 rounded-lg text-sm text-white focus:border-indigo-500 focus:outline-none transition-colors"
+                      className="w-full h-8 px-2.5 rounded-lg text-[11px] text-white appearance-none transition-colors cursor-pointer focus:outline-none"
+                      style={{
+                        background: 'rgba(20, 25, 35, 0.6)',
+                        border: '1px solid rgba(255, 255, 255, 0.12)'
+                      }}
                     >
                       <option value="header">Header</option>
                       <option value="query">Query Param</option>
                     </select>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-gray-400">Key Value</label>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-medium text-gray-400">Key Value</label>
                   <input
                     type="password"
                     value={newCred.data.key_value || ""}
                     onChange={(e) => updateCredData("key_value", e.target.value)}
-                    className="w-full h-10 px-3 rounded-lg text-sm text-white placeholder-gray-500 transition-colors focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    className="w-full h-8 px-2.5 rounded-lg text-[11px] text-white placeholder-gray-500 transition-colors focus:outline-none"
                 style={{
                   background: 'rgba(255, 255, 255, 0.08)',
                   border: '1px solid rgba(255, 255, 255, 0.12)'
@@ -468,13 +477,13 @@ export default function CredentialsPanel({ assistantId }) {
 
             {/* Bearer Token */}
             {newCred.type === "bearer" && (
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-gray-400">Token</label>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-medium text-gray-400">Token</label>
                 <input
                   type="password"
                   value={newCred.data.token || ""}
                   onChange={(e) => updateCredData("token", e.target.value)}
-                  className="w-full h-10 px-3 rounded-lg text-sm text-white placeholder-gray-500 transition-colors focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  className="w-full h-8 px-2.5 rounded-lg text-[11px] text-white placeholder-gray-500 transition-colors focus:outline-none"
                 style={{
                   background: 'rgba(255, 255, 255, 0.08)',
                   border: '1px solid rgba(255, 255, 255, 0.12)'
@@ -487,13 +496,13 @@ export default function CredentialsPanel({ assistantId }) {
             {/* Basic Auth */}
             {newCred.type === "basic_auth" && (
               <>
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-gray-400">Username</label>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-medium text-gray-400">Username</label>
                   <input
                     type="text"
                     value={newCred.data.username || ""}
                     onChange={(e) => updateCredData("username", e.target.value)}
-                    className="w-full h-10 px-3 rounded-lg text-sm text-white placeholder-gray-500 transition-colors focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    className="w-full h-8 px-2.5 rounded-lg text-[11px] text-white placeholder-gray-500 transition-colors focus:outline-none"
                 style={{
                   background: 'rgba(255, 255, 255, 0.08)',
                   border: '1px solid rgba(255, 255, 255, 0.12)'
@@ -501,13 +510,13 @@ export default function CredentialsPanel({ assistantId }) {
                     placeholder="username"
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-gray-400">Password</label>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-medium text-gray-400">Password</label>
                   <input
                     type="password"
                     value={newCred.data.password || ""}
                     onChange={(e) => updateCredData("password", e.target.value)}
-                    className="w-full h-10 px-3 rounded-lg text-sm text-white placeholder-gray-500 transition-colors focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    className="w-full h-8 px-2.5 rounded-lg text-[11px] text-white placeholder-gray-500 transition-colors focus:outline-none"
                 style={{
                   background: 'rgba(255, 255, 255, 0.08)',
                   border: '1px solid rgba(255, 255, 255, 0.12)'
@@ -521,13 +530,13 @@ export default function CredentialsPanel({ assistantId }) {
             {/* OAuth2 */}
             {newCred.type === "oauth2" && (
               <>
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-gray-400">Access Token</label>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-medium text-gray-400">Access Token</label>
                   <input
                     type="password"
                     value={newCred.data.access_token || ""}
                     onChange={(e) => updateCredData("access_token", e.target.value)}
-                    className="w-full h-10 px-3 rounded-lg text-sm text-white placeholder-gray-500 transition-colors focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    className="w-full h-8 px-2.5 rounded-lg text-[11px] text-white placeholder-gray-500 transition-colors focus:outline-none"
                 style={{
                   background: 'rgba(255, 255, 255, 0.08)',
                   border: '1px solid rgba(255, 255, 255, 0.12)'
@@ -535,13 +544,13 @@ export default function CredentialsPanel({ assistantId }) {
                     placeholder="ya29..."
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-gray-400">Refresh Token (Optional)</label>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-medium text-gray-400">Refresh Token (Optional)</label>
                   <input
                     type="password"
                     value={newCred.data.refresh_token || ""}
                     onChange={(e) => updateCredData("refresh_token", e.target.value)}
-                    className="w-full h-10 px-3 rounded-lg text-sm text-white placeholder-gray-500 transition-colors focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    className="w-full h-8 px-2.5 rounded-lg text-[11px] text-white placeholder-gray-500 transition-colors focus:outline-none"
                 style={{
                   background: 'rgba(255, 255, 255, 0.08)',
                   border: '1px solid rgba(255, 255, 255, 0.12)'
@@ -554,23 +563,23 @@ export default function CredentialsPanel({ assistantId }) {
 
             {/* Custom Headers */}
             {newCred.type === "header" && (
-              <div className="space-y-3">
-                <label className="text-xs font-medium text-gray-400">Headers</label>
+              <div className="space-y-2">
+                <label className="text-[10px] font-medium text-gray-400">Headers</label>
                 {Object.entries(newCred.data.headers || {}).map(([key, value]) => (
                   <div 
                     key={key} 
-                    className="flex items-center gap-2 h-10 px-3 rounded-lg"
+                    className="flex items-center gap-2 h-8 px-2.5 rounded-lg"
                     style={{
                       background: 'rgba(255, 255, 255, 0.08)',
                       border: '1px solid rgba(255, 255, 255, 0.12)'
                     }}
                   >
-                    <span className="flex-1 text-sm text-white font-mono truncate">{key}: {value}</span>
+                    <span className="flex-1 text-[11px] text-white font-mono truncate">{key}: {value}</span>
                     <button
                       onClick={() => removeHeader(key)}
                       className="text-gray-500 hover:text-red-400 transition-colors"
                     >
-                      <X className="w-4 h-4" />
+                      <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 ))}
@@ -580,7 +589,7 @@ export default function CredentialsPanel({ assistantId }) {
                     value={headerKey}
                     onChange={(e) => setHeaderKey(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addHeader()}
-                    className="flex-1 h-10 px-3 rounded-lg text-sm text-white placeholder-gray-500 transition-colors focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    className="flex-1 h-8 px-2.5 rounded-lg text-[11px] text-white placeholder-gray-500 transition-colors focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     style={{
                       background: 'rgba(255, 255, 255, 0.08)',
                       border: '1px solid rgba(255, 255, 255, 0.12)'
@@ -592,7 +601,7 @@ export default function CredentialsPanel({ assistantId }) {
                     value={headerValue}
                     onChange={(e) => setHeaderValue(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && addHeader()}
-                    className="flex-1 h-10 px-3 rounded-lg text-sm text-white placeholder-gray-500 transition-colors focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    className="flex-1 h-8 px-2.5 rounded-lg text-[11px] text-white placeholder-gray-500 transition-colors focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     style={{
                       background: 'rgba(255, 255, 255, 0.08)',
                       border: '1px solid rgba(255, 255, 255, 0.12)'
@@ -601,9 +610,13 @@ export default function CredentialsPanel({ assistantId }) {
                   />
                   <button
                     onClick={addHeader}
-                    className="h-10 w-10 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 rounded-lg flex items-center justify-center transition-colors"
+                    className="h-8 w-8 rounded-lg flex items-center justify-center transition-colors"
+                    style={{
+                      background: "rgba(19, 245, 132, 0.12)",
+                      color: "#9EFBCD",
+                    }}
                   >
-                    <Plus className="w-4 h-4 text-white" />
+                    <Plus className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
@@ -612,7 +625,11 @@ export default function CredentialsPanel({ assistantId }) {
             <button
               onClick={handleCreate}
               disabled={loading}
-              className="w-full h-10 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-8 rounded-lg text-[11px] font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                background: "rgba(19, 245, 132, 0.12)",
+                color: "#9EFBCD",
+              }}
             >
               {loading ? 'Creating...' : 'Create Credential'}
             </button>
@@ -627,12 +644,12 @@ export default function CredentialsPanel({ assistantId }) {
         ) : credentials.length === 0 && !showCreate ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div 
-              className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
+              className="w-10 h-10 rounded-2xl flex items-center justify-center mb-4"
               style={{
                 background: 'rgba(255, 255, 255, 0.08)'
               }}
             >
-              <Key className="w-8 h-8 text-gray-400" />
+              <Key className="w-5 h-5 text-gray-400" />
             </div>
             <p className="text-sm font-medium text-white mb-1">No credentials</p>
             <p className="text-xs text-gray-400">Create one to get started</p>
