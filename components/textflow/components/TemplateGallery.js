@@ -12,58 +12,61 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'https://176.9.16.194:5403/
 // TEMPLATE CARD COMPONENT
 // ============================================================================
 
+function truncate(text = "", max = 20) {
+  if (!text) return "";
+  return text.length > max ? `${text.slice(0, max)}…` : text;
+}
+
 function TemplateCard({ template, onSelect, isFavorite, onToggleFavorite }) {
+const rawTitle = template?.name || "";
+const titleWords = rawTitle.trim().split(/\s+/);
+const firstLineTitle = titleWords.slice(0, 3).join(" ");
+const remainingTitle = titleWords.slice(3).join(" ");
+const descriptionText = truncate(template?.description || "No description provided", 60);
   return (
-    <div 
-      className="rounded-xl border transition-all hover:shadow-lg overflow-hidden group"
+    <div
+      className="rounded-2xl border overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-lg group node-card-surface"
       style={{
-        background: 'rgba(255, 255, 255, 0.06)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        borderColor: 'rgba(255, 255, 255, 0.12)'
+        borderColor: 'rgba(255, 255, 255, 0.12)',
       }}
     >
-      <div className="p-4 space-y-3">
+      <div className="p-3 space-y-2.5 relative">
         {/* Header */}
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1">
-            <h3 className="font-semibold text-white group-hover:text-emerald-400 transition-colors truncate">
-              {template.name}
+        <div className="flex items-start justify-between gap-1.5">
+          <div className="flex-1 space-y-0.5">
+            <span
+              className="inline-flex px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wide node-badge-immediate"
+            >
+              {template.category}
+            </span>
+            <h3 className="text-[12px] font-semibold text-white/85 transition-colors leading-tight">
+              <span className="block">{firstLineTitle}</span>
+              {remainingTitle && (
+                <span className="block text-white/70">
+                  {truncate(remainingTitle, 35)}
+                </span>
+              )}
             </h3>
             {/* FIXED: Show description properly */}
-            <p className="text-xs text-gray-400 mt-1 line-clamp-2">
-              {template.description || "No description provided"}
+            <p className="text-[10px] text-white/50 line-clamp-2">
+              {descriptionText}
             </p>
           </div>
           <button
             onClick={() => onToggleFavorite(template.template_id)}
-            className="flex-shrink-0"
+            className="flex-shrink-0 text-white/40 hover:text-red-400 transition-colors"
           >
             <Heart
-              className={`w-4 h-4 transition-colors ${
-                isFavorite ? "fill-red-500 text-red-500" : "text-gray-500 hover:text-red-400"
+              className={`w-3.5 h-3.5 transition-colors ${
+                isFavorite ? "fill-red-500 text-red-500" : ""
               }`}
             />
           </button>
         </div>
 
         {/* Metadata */}
-        <div className="flex items-center gap-2 flex-wrap text-xs">
-          <span 
-            className="px-2 py-1 rounded text-gray-300 capitalize"
-            style={{
-              background: 'rgba(255, 255, 255, 0.08)'
-            }}
-          >
-            {template.category}
-          </span>
-          <span className="flex items-center gap-1 text-yellow-500">
-            <Star className="w-3 h-3 fill-current" />
-            {template.rating?.toFixed(1) || "0.0"}
-          </span>
-          <span className="text-gray-400">
-            {template.usage_count || 0} uses
-          </span>
+        <div className="flex items-center gap-1 flex-wrap text-[9px] text-white/55">
+          <span>{template.usage_count || 0} users</span>
         </div>
 
         {/* Tags */}
@@ -74,34 +77,36 @@ function TemplateCard({ template, onSelect, isFavorite, onToggleFavorite }) {
                 key={tag}
                 className="px-2 py-0.5 rounded-full text-[10px]"
                 style={{
-                  background: 'rgba(19, 245, 132, 0.16)',
-                  color: '#9EFBCD'
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  color: 'rgba(255, 255, 255, 0.75)',
                 }}
               >
                 {tag}
               </span>
             ))}
             {template.tags.length > 3 && (
-              <span className="text-[10px] text-gray-500">+{template.tags.length - 3}</span>
+              <span className="text-[10px] text-white/40">+{template.tags.length - 3}</span>
             )}
           </div>
         )}
 
         {/* Actions */}
-        <div className="flex gap-2 pt-2 border-t border-white/10">
+        <div className="flex items-center gap-2 pt-3 border-t border-white/5">
+          <div className="flex-1 flex">
+            <button
+              onClick={() => onSelect(template)}
+              className="px-2 py-1.5 rounded-xl text-[10px] font-semibold transition-all text-left"
+              style={{
+                background: "rgba(19, 245, 132, 0.12)",
+                color: "#9EFBCD",
+              }}
+            >
+              Use
+            </button>
+          </div>
           <button
-            onClick={() => onSelect(template)}
-            className="flex-1 px-3 py-1.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1"
-          >
-            <Download className="w-3 h-3" />
-            Use Template
-          </button>
-          <button 
-            className="px-3 py-1.5 rounded-lg text-xs flex items-center justify-center gap-1 transition-all"
-            style={{
-              background: 'rgba(255, 255, 255, 0.08)',
-              color: 'rgba(255, 255, 255, 0.7)'
-            }}
+            className="px-2 py-1 text-white/70 hover:text-white transition-colors"
+            title="Share"
           >
             <Share2 className="w-3 h-3" />
           </button>
@@ -196,21 +201,21 @@ function TemplateDiscovery({ assistantId, onSelectTemplate, onClose }) {
   return (
     <div className="space-y-4 h-full flex flex-col">
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-white/10 px-4 pt-4">
+      <div className="flex gap-1 px-4 pt-3">
         {["discover", "trending", "favorites"].map(tab => (
           <button
             key={tab}
             onClick={() => setSelectedTab(tab)}
-            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-all ${
+            className={`px-2.5 py-1.5 text-[10px] font-semibold rounded-md transition-all ${
               selectedTab === tab
-                ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white"
-                : "text-gray-400 hover:text-gray-300"
+                ? "bg-[rgba(19,245,132,0.08)] text-[#9EFBCD]"
+                : "text-white/60 hover:text-white/80"
             }`}
           >
             {tab === "discover" && "Browse"}
-            {tab === "trending" && <TrendingUp className="w-4 h-4 inline mr-1" />}
+            {tab === "trending" && <TrendingUp className="w-3 h-3 inline mr-1 opacity-80" />}
             {tab === "trending" && "Trending"}
-            {tab === "favorites" && <Heart className="w-4 h-4 inline mr-1" />}
+            {tab === "favorites" && <Heart className="w-3 h-3 inline mr-1 opacity-80" />}
             {tab === "favorites" && "Saved"}
           </button>
         ))}
@@ -219,34 +224,38 @@ function TemplateDiscovery({ assistantId, onSelectTemplate, onClose }) {
       {/* Search & Filters */}
       <div className="px-4 space-y-3">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
           <input
             type="text"
             placeholder="Search templates..."
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-lg text-sm text-white placeholder-gray-500 transition-colors focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            className="w-full pl-9 pr-3.5 py-1.5 rounded-2xl text-[12px] text-white placeholder-white/40 transition-colors focus:ring-2 focus:ring-emerald-400/20 focus:border-emerald-400/60 border"
             style={{
-              background: 'rgba(255, 255, 255, 0.08)',
-              border: '1px solid rgba(255, 255, 255, 0.12)'
+              background: 'rgba(255, 255, 255, 0.04)',
+              borderColor: 'rgba(145, 158, 171, 0.2)'
             }}
           />
         </div>
 
         {selectedTab === "discover" && (
-          <div className="flex gap-2 overflow-x-auto pb-2">
+          <div className="flex gap-1.5 overflow-x-auto pb-2">
             {categories.map(cat => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
+                className="px-3 py-1.5 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all"
+                style={
                   selectedCategory === cat
-                    ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white"
-                    : "text-gray-400 hover:text-gray-300"
-                }`}
-                style={selectedCategory !== cat ? {
-                  background: 'rgba(255, 255, 255, 0.08)'
-                } : {}}
+                    ? {
+                        background: "rgba(19, 245, 132, 0.08)",
+                        color: "#9EFBCD",
+                      }
+                    : {
+                        background: "rgba(255, 255, 255, 0.08)",
+                        color: "rgba(255,255,255,0.7)",
+                      }
+                }
               >
                 {cat.charAt(0).toUpperCase() + cat.slice(1)}
               </button>
@@ -256,20 +265,20 @@ function TemplateDiscovery({ assistantId, onSelectTemplate, onClose }) {
       </div>
 
       {/* Templates Grid */}
-      <div className="flex-1 overflow-auto px-4 pb-4">
+      <div className="flex-1 overflow-auto px-4 pb-4 template-scroll">
         {loading ? (
           <div className="flex items-center justify-center h-32">
             <div className="text-center">
-              <div className="w-8 h-8 border-2 border-gray-700 border-t-indigo-500 rounded-full animate-spin mx-auto mb-2"></div>
-              <div className="text-sm text-gray-400">Loading templates...</div>
+              <div className="w-7 h-7 border-2 border-gray-700 border-t-emerald-400 rounded-full animate-spin mx-auto mb-2"></div>
+              <div className="text-xs text-white/60">Loading templates...</div>
             </div>
           </div>
         ) : templates.length === 0 ? (
           <div className="flex items-center justify-center h-32">
-            <div className="text-center">
-              <Sparkles className="w-12 h-12 mx-auto mb-3 text-gray-600" />
-              <div className="text-sm font-medium text-gray-400">No templates found</div>
-              <div className="text-xs text-gray-600 mt-1">Try adjusting your filters</div>
+            <div className="text-center space-y-1">
+              <Sparkles className="w-8 h-8 mx-auto text-white/30" />
+              <div className="text-[12px] font-semibold text-white/75">No templates found</div>
+              <div className="text-[10px] text-white/45">Try adjusting your filters</div>
             </div>
           </div>
         ) : (
@@ -452,14 +461,18 @@ function MyTemplates({ assistantId, onSelectTemplate, onClose, onGetCurrentFlow 
   return (
     <div className="space-y-4 h-full flex flex-col">
       {/* Header */}
-      <div className="px-4 pt-4 pb-2 flex items-center justify-between border-b border-white/10">
+      <div className="px-4 pt-3 pb-2 flex items-center justify-between border-b border-white/10">
         <div>
-          <h3 className="font-semibold text-white">My Templates</h3>
-          <p className="text-xs text-gray-400">{templates.length} templates</p>
+          <h3 className="text-sm font-semibold text-white/90">My Templates</h3>
+          <p className="text-[11px] text-white/50">{templates.length} templates</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="px-3 py-1.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg text-xs font-medium flex items-center gap-1 transition-all"
+          className="px-3 py-1.5 rounded-lg text-[11px] font-semibold flex items-center gap-1 transition-all"
+          style={{
+            background: "rgba(19, 245, 132, 0.12)",
+            color: "#9EFBCD",
+          }}
         >
           <Plus className="w-3 h-3" />
           Save Current
@@ -487,16 +500,16 @@ function MyTemplates({ assistantId, onSelectTemplate, onClose, onGetCurrentFlow 
       )}
 
       {/* Templates List */}
-      <div className="flex-1 overflow-auto px-4 pb-4 space-y-2">
+      <div className="flex-1 overflow-auto px-4 pb-4 space-y-2 template-scroll">
         {loading ? (
           <div className="flex items-center justify-center h-32">
-            <div className="text-sm text-gray-400">Loading...</div>
+            <div className="text-xs text-white/60">Loading...</div>
           </div>
         ) : templates.length === 0 ? (
-          <div className="text-center py-12">
-            <Code className="w-12 h-12 mx-auto mb-3 text-gray-600" />
-            <div className="text-sm text-gray-400">No templates yet</div>
-            <div className="text-xs text-gray-600 mt-1">Save your flows as templates to reuse them</div>
+          <div className="text-center py-10 space-y-1.5">
+            <Code className="w-10 h-10 mx-auto text-white/30" />
+            <div className="text-sm font-semibold text-white/75">No templates yet</div>
+            <div className="text-[11px] text-white/50">Save your flows as templates to reuse them</div>
           </div>
         ) : (
           templates.map(template => (
@@ -512,16 +525,17 @@ function MyTemplates({ assistantId, onSelectTemplate, onClose, onGetCurrentFlow 
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1">
-                  <h4 className="font-medium text-white">{template.name}</h4>
+                    <h4 className="text-sm font-semibold text-white/90">{template.name}</h4>
                   {/* FIXED: Show description properly */}
-                  <p className="text-xs text-gray-400 mt-1 line-clamp-2">
+                    <p className="text-[11px] text-white/50 mt-1 line-clamp-2">
                     {template.description || "No description"}
                   </p>
-                  <div className="flex items-center gap-3 mt-2 text-[10px] text-gray-400">
+                    <div className="flex items-center gap-3 mt-2 text-[10px] text-white/50">
                     <span 
                       className="px-2 py-0.5 rounded capitalize"
                       style={{
-                        background: 'rgba(255, 255, 255, 0.08)'
+                          background: 'rgba(255, 255, 255, 0.08)',
+                          color: 'rgba(255,255,255,0.7)'
                       }}
                     >
                       {template.category}
@@ -536,29 +550,27 @@ function MyTemplates({ assistantId, onSelectTemplate, onClose, onGetCurrentFlow 
                     )}
                   </div>
                 </div>
-                <div className="flex gap-1">
+                <div className="flex gap-1.5">
                   <button
                     onClick={() => {
                       onSelectTemplate(template);
                       onClose();
                     }}
-                    className="p-2 hover:bg-emerald-600 text-gray-400 hover:text-white rounded transition-all"
+                    className="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-[#9EFBCD] transition-all"
                     style={{
-                      background: 'rgba(255, 255, 255, 0.08)'
+                      background: "rgba(19, 245, 132, 0.12)",
                     }}
-                    title="Use template"
                   >
-                    <Download className="w-4 h-4" />
+                    Use
                   </button>
                   <button
                     onClick={() => handleDeleteTemplate(template.template_id)}
-                    className="p-2 hover:bg-red-600 text-gray-400 hover:text-white rounded transition-all"
+                    className="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-red-300 transition-all"
                     style={{
-                      background: 'rgba(255, 255, 255, 0.08)'
+                      background: 'rgba(255, 72, 72, 0.1)'
                     }}
-                    title="Delete template"
                   >
-                    <X className="w-4 h-4" />
+                    Delete
                   </button>
                 </div>
               </div>
@@ -806,7 +818,7 @@ export default function TemplateGallery({ assistantId, onSelectTemplate, onClose
       
       {/* Modal */}
       <div 
-        className="relative rounded-3xl w-full max-w-4xl h-[80vh] max-h-[80vh] shadow-2xl flex flex-col overflow-hidden"
+        className="relative rounded-3xl w-full max-w-xl h-[50vh] max-h-[50vh] shadow-2xl flex flex-col overflow-hidden"
         style={{
           background: 'rgba(255, 255, 255, 0.04)',
           backdropFilter: 'blur(20px)',
@@ -815,15 +827,10 @@ export default function TemplateGallery({ assistantId, onSelectTemplate, onClose
         }}
       >
         {/* Header */}
-        <div className="px-6 py-4 flex items-center justify-between border-b border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-white">Template Library</h2>
-              <p className="text-xs text-gray-400">Discover and reuse flow templates</p>
-            </div>
+        <div className="px-6 py-3 flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-white/90 tracking-tight">Template Library</h2>
+            <p className="text-[11px] text-white/60">Discover and reuse flow templates</p>
           </div>
           <button
             onClick={onClose}
@@ -835,7 +842,7 @@ export default function TemplateGallery({ assistantId, onSelectTemplate, onClose
         </div>
 
         {/* Tabs */}
-        <div className="px-6 border-b border-white/10 flex gap-4">
+        <div className="px-6 pb-2 flex gap-1">
           {[
             { id: "discover", label: "Discover", icon: Sparkles },
             { id: "my-templates", label: "My Templates", icon: Code }
@@ -845,13 +852,13 @@ export default function TemplateGallery({ assistantId, onSelectTemplate, onClose
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-3 text-sm font-medium border-b-2 transition-all flex items-center gap-2 ${
+                className={`px-2.5 py-1.5 text-[11px] font-semibold rounded-md transition-all flex items-center gap-1.5 ${
                   activeTab === tab.id
-                    ? "border-emerald-500 text-emerald-400"
-                    : "border-transparent text-gray-400 hover:text-gray-300"
+                    ? "bg-[rgba(19,245,132,0.08)] text-[#9EFBCD]"
+                    : "text-white/60 hover:text-white/80"
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-3 h-3 opacity-80" />
                 {tab.label}
               </button>
             );

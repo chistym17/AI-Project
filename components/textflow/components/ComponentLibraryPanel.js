@@ -298,7 +298,7 @@ export default function ComponentLibraryPanel({ assistantId, nodeType, onSelectC
       
       {/* Modal */}
       <div 
-        className="relative rounded-3xl w-full max-w-5xl h-[85vh] max-h-[85vh] shadow-2xl flex flex-col overflow-hidden"
+        className="relative rounded-3xl w-full max-w-xl h-[50vh] max-h-[50vh] shadow-2xl flex flex-col overflow-hidden"
         style={{
           background: 'rgba(255, 255, 255, 0.04)',
           backdropFilter: 'blur(20px)',
@@ -318,48 +318,42 @@ export default function ComponentLibraryPanel({ assistantId, nodeType, onSelectC
         )}
         
         {/* Header */}
-        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
-              <Package className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-white">Component Library</h2>
-              <p className="text-xs text-gray-200">Reusable node configurations</p>
-            </div>
+        <div className="px-6 py-3 border-b border-white/10 flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-white/90 tracking-tight">Component Library</h2>
+            <p className="text-[11px] text-white/60">Reusable node configurations</p>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowCreateModal(true)}
-              className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg text-sm font-medium transition-all flex items-center gap-2"
+              className="px-4 py-2 rounded-xl text-sm font-semibold transition-all text-center"
+              style={{
+                color: "#9EFBCD",
+                background: "rgba(19, 245, 132, 0.08)",
+              }}
             >
-              <Plus className="w-4 h-4" />
               New Component
-            </button>
-            <button
-              onClick={onClose}
-              className="w-6 h-6 flex items-center justify-center text-white/60 hover:text-white transition-colors"
-              title="Close"
-            >
-              <X className="w-6 h-6" />
             </button>
           </div>
         </div>
 
         {/* Filters */}
         <div className="px-6 py-3 border-b border-white/10 flex items-center gap-3">
-          <span className="text-sm text-gray-200">Filter:</span>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-1.5 flex-wrap">
             <button
               onClick={() => setFilterByType("all")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              className="px-3 py-1.5 rounded-md text-[11px] font-semibold transition-all"
+              style={
                 filterByType === "all"
-                  ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white"
-                  : "text-gray-200 hover:text-gray-100"
-              }`}
-              style={filterByType !== "all" ? {
-                background: 'rgba(255, 255, 255, 0.08)'
-              } : {}}
+                  ? {
+                      background: "rgba(19, 245, 132, 0.08)",
+                      color: "#9EFBCD",
+                    }
+                  : {
+                      background: "rgba(255, 255, 255, 0.08)",
+                      color: "rgba(255,255,255,0.7)",
+                    }
+              }
             >
               All
             </button>
@@ -367,14 +361,18 @@ export default function ComponentLibraryPanel({ assistantId, nodeType, onSelectC
               <button
                 key={type}
                 onClick={() => setFilterByType(type)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all ${
+                className="px-3 py-1.5 rounded-md text-[11px] font-semibold capitalize transition-all"
+                style={
                   filterByType === type
-                    ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white"
-                    : "text-gray-200 hover:text-gray-100"
-                }`}
-                style={filterByType !== type ? {
-                  background: 'rgba(255, 255, 255, 0.08)'
-                } : {}}
+                    ? {
+                        background: "rgba(19, 245, 132, 0.08)",
+                        color: "#9EFBCD",
+                      }
+                    : {
+                        background: "rgba(255, 255, 255, 0.08)",
+                        color: "rgba(255,255,255,0.7)",
+                      }
+                }
               >
                 {type}
               </button>
@@ -426,17 +424,12 @@ export default function ComponentLibraryPanel({ assistantId, nodeType, onSelectC
             </div>
           ) : components.length === 0 ? (
             <div className="flex items-center justify-center h-64">
-              <div className="text-center">
-                <Package className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                <div className="text-lg font-medium text-gray-200 mb-2">No components yet</div>
-                <p className="text-sm text-gray-300 mb-4">Create reusable node configurations</p>
-                <button
-                  onClick={() => setShowCreateModal(true)}
-                  className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg text-sm font-medium transition-all flex items-center gap-2 mx-auto"
-                >
-                  <Plus className="w-4 h-4" />
-                  Create Component
-                </button>
+              <div className="flex flex-col items-center text-center gap-1.5 translate-y-3">
+                <Package className="w-10 h-10 text-gray-500/80" />
+                <div className="text-sm font-semibold text-white/75">No components yet</div>
+                <p className="text-[11px] text-white/45 max-w-xs">
+                  Create reusable node configurations to speed up your flow building.
+                </p>
               </div>
             </div>
           ) : (
