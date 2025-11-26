@@ -755,7 +755,7 @@ const FlowHUD = ({ className = "" }) => {
     Boolean(currentMode);
 
   return (
-    <div className={`flex flex-col h-full min-h-0 rounded-3xl border border-white/10 bg-white/5 text-white shadow-xl shadow-black/30 backdrop-blur-xl ${className}`}>
+    <div className={`flex flex-col h-full min-h-0 rounded-3xl border border-white/10 bg-white/5 text-white shadow-xl shadow-black/30 backdrop-blur-xl divide-y divide-white/5 ${className}`}>
       <div className="flex items-center gap-3 border-b border-white/5 px-4 py-3 flex-shrink-0">
         <div className={`h-2.5 w-2.5 rounded-full ${flowEnabled ? "bg-emerald-400 animate-pulse" : "bg-white/30"}`} />
         <h3 className="text-[10px] font-semibold uppercase tracking-wide text-white/70">Flow Monitor</h3>
@@ -766,7 +766,7 @@ const FlowHUD = ({ className = "" }) => {
           Enable Flow Mode to track node transitions in real time.
         </div>
       ) : (
-        <div className="flex-1 overflow-y-auto space-y-3 p-4 text-[9px] text-white/70 min-h-0">
+        <div className="flex-1 overflow-y-auto p-4 text-[9px] text-white/70 min-h-0 space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
               <div className="text-[8px] font-medium uppercase tracking-wide text-white/40">Current Node</div>
@@ -782,7 +782,7 @@ const FlowHUD = ({ className = "" }) => {
             </div>
           </div>
 
-          <div>
+          <div className="pt-3 border-t border-white/5">
             <div className="mb-1.5 text-[8px] font-medium uppercase tracking-wide text-white/40">Recent Path</div>
             {!nodes.length ? (
               <div className="rounded-xl border border-white/10 bg-white/5 py-1 px-1.5 text-center text-[7px] text-white/40">
@@ -810,7 +810,7 @@ const FlowHUD = ({ className = "" }) => {
             )}
           </div>
 
-          <div>
+          <div className="pt-3 border-t border-white/5">
             <div className="mb-1.5 text-[8px] font-medium uppercase tracking-wide text-white/40">Functions</div>
           {!funcs.length ? (
             <div className="rounded-xl border border-white/10 bg-white/5 py-1 px-1.5 text-center text-[7px] text-white/40">
@@ -1089,13 +1089,14 @@ const PanelTabs = ({ entries, className = "" }) => {
       <LeftSidebar />
       
       <div
-        className="relative flex h-full flex-col overflow-hidden"
-        style={{ marginLeft: isCollapsed ? "56px" : "105px" }}
+        className={`relative flex h-full flex-col overflow-hidden transition-all duration-300 ${
+          isCollapsed ? "ml-20" : "ml-[140px]"
+        }`}
       >
         <div className="flex h-full flex-col">
-          <main className="flex h-full flex-1 flex-col overflow-hidden items-center justify-center p-4 lg:pl-8 lg:pr-16 lg:pt-6 lg:pb-10">
+          <main className="flex h-full flex-1 flex-col overflow-hidden items-center justify-center p-6 lg:px-[120px] lg:py-[60px]">
             {/* Parent Container with margins (matching ChatInterface design) */}
-            <div className="flex flex-1 min-h-0 w-full max-w-[1800px] flex-col gap-5 overflow-hidden lg:flex-row lg:items-stretch">
+            <div className="flex flex-1 min-h-0 w-full max-w-[1800px] max-h-[900px] flex-col gap-5 overflow-hidden lg:flex-row lg:items-stretch">
               <div className="flex min-h-0 w-full flex-shrink-0 flex-col space-y-4 lg:h-full lg:max-w-[280px] lg:max-h-full">
                 <div className="min-h-0 lg:flex-[0.50] lg:overflow-hidden">
                   <AssistantList className="h-full min-h-0" />
