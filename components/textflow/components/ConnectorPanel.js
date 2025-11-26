@@ -261,6 +261,8 @@ export default function ConnectorPanel({ assistantId, onSelectConnector, onClose
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [deleteModal, setDeleteModal] = useState({ open: false, connectorId: null, connectorName: '', isOwner: false });
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [activeTab, setActiveTab] = useState('discover'); // 'discover', 'my-connectors'
@@ -372,12 +374,16 @@ export default function ConnectorPanel({ assistantId, onSelectConnector, onClose
         connectorName: connector.name,
         isOwner: true
       });
+      setDeleteError('');
+      setDeleteLoading(false);
     }
   };
 
   const confirmDelete = async () => {
     if (!deleteModal.connectorId) return;
 
+    setDeleteLoading(true);
+    setDeleteError('');
     try {
       const response = await fetch(
         `${API_BASE}/textflow/connectors/${deleteModal.connectorId}?owner_id=${assistantId}`,
@@ -388,11 +394,12 @@ export default function ConnectorPanel({ assistantId, onSelectConnector, onClose
       setSuccess('Connector deleted');
       setTimeout(() => setSuccess(''), 2000);
       setDeleteModal({ open: false, connectorId: null, connectorName: '', isOwner: false });
+      setDeleteLoading(false);
       loadConnectors();
     } catch (err) {
-      setError(err.message);
-      setTimeout(() => setError(''), 3000);
-      setDeleteModal({ open: false, connectorId: null, connectorName: '', isOwner: false });
+      const message = err.message || 'Failed to delete connector';
+      setDeleteError(message);
+      setDeleteLoading(false);
     }
   };
 
@@ -484,12 +491,16 @@ export default function ConnectorPanel({ assistantId, onSelectConnector, onClose
         connectorName: connector.name,
         isOwner: false
       });
+      setDeleteError('');
+      setDeleteLoading(false);
     }
   };
 
   const confirmUninstall = async () => {
     if (!deleteModal.connectorId) return;
     
+    setDeleteLoading(true);
+    setDeleteError('');
     try {
       const res = await fetch(
         `${API_BASE}/textflow/connectors/${deleteModal.connectorId}/install?owner_id=${assistantId}`,
@@ -506,11 +517,12 @@ export default function ConnectorPanel({ assistantId, onSelectConnector, onClose
       setSuccess('Removed from My Connectors');
       setTimeout(() => setSuccess(''), 2000);
       setDeleteModal({ open: false, connectorId: null, connectorName: '', isOwner: false });
+      setDeleteLoading(false);
       loadConnectors();
     } catch (err) {
-      setError(err.message);
-      setTimeout(() => setError(''), 3000);
-      setDeleteModal({ open: false, connectorId: null, connectorName: '', isOwner: false });
+      const message = err.message || 'Failed to remove connector';
+      setDeleteError(message);
+      setDeleteLoading(false);
     }
   };
 
@@ -723,81 +735,99 @@ export default function ConnectorPanel({ assistantId, onSelectConnector, onClose
 
         {/* Delete/Remove Confirmation Modal */}
         {deleteModal.open && (
-          <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-            {/* Backdrop */}
-            <div 
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm" 
-              onClick={() => setDeleteModal({ open: false, connectorId: null, connectorName: '', isOwner: false })} 
+          <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={() => {
+                if (!deleteLoading) {
+                  setDeleteModal({ open: false, connectorId: null, connectorName: '', isOwner: false });
+                  setDeleteError('');
+                }
+              }}
             />
-            
-            {/* Modal */}
-            <div 
-              className="relative rounded-3xl max-w-md w-full shadow-2xl"
+            <div
+              className="relative rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden"
               style={{
                 background: 'rgba(255, 255, 255, 0.04)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.12)'
+                border: '1px solid rgba(255, 255, 255, 0.12)',
+                borderRadius: '24px'
               }}
             >
-              <div className="p-6 space-y-4">
-                {/* Header */}
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center">
-                    <AlertCircle className="w-6 h-6 text-white" />
-                  </div>
+              <div className="flex flex-col gap-3 p-4">
+                <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-lg font-bold text-white">
+                    <h3 className="text-sm font-semibold text-white/90">
                       {deleteModal.isOwner ? 'Delete Connector' : 'Remove Connector'}
                     </h3>
-                    <p className="text-xs text-gray-400">This action cannot be undone</p>
+                    <p className="text-[11px] text-white/60">
+                      {deleteModal.isOwner
+                        ? 'Deleting removes it for everyone. This cannot be undone.'
+                        : 'You can add it again from Discover later.'}
+                    </p>
                   </div>
+                  <button
+                    onClick={() => {
+                      if (!deleteLoading) {
+                        setDeleteModal({ open: false, connectorId: null, connectorName: '', isOwner: false });
+                        setDeleteError('');
+                      }
+                    }}
+                    className="w-5 h-5 flex items-center justify-center text-white/60 hover:text-white transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
 
-                {/* Message */}
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-300">
+                <div className="rounded-2xl border border-white/10 bg-white/5 px-3 py-3">
+                  <p className="text-[12px] text-white/75 leading-relaxed">
                     {deleteModal.isOwner ? (
                       <>
-                        Are you sure you want to delete <span className="font-semibold text-white">"{deleteModal.connectorName}"</span>? 
-                        This will permanently remove the connector and it will be removed from all users who installed it.
+                        Permanently delete <span className="text-white font-semibold">"{deleteModal.connectorName}"</span>?<br />
+                        Installed users will lose access immediately.
                       </>
                     ) : (
                       <>
-                        Remove <span className="font-semibold text-white">"{deleteModal.connectorName}"</span> from My Connectors? 
-                        You can add it again from Discover.
+                        Remove <span className="text-white font-semibold">"{deleteModal.connectorName}"</span> from your workspace?
+                        You can reinstall it whenever needed.
                       </>
                     )}
                   </p>
                 </div>
 
-                {/* Actions */}
-                <div className="flex justify-end items-center gap-2.5 pt-4">
+                {deleteError && (
+                  <div className="bg-red-950/30 border border-red-800/50 rounded-lg p-2 flex items-start gap-2">
+                    <AlertCircle className="w-3.5 h-3.5 text-red-400 flex-shrink-0 mt-0.5" />
+                    <span className="text-[11px] text-red-300">{deleteError}</span>
+                  </div>
+                )}
+
+                <div className="flex justify-end items-center gap-2 pt-2">
                   <button
-                    onClick={() => setDeleteModal({ open: false, connectorId: null, connectorName: '', isOwner: false })}
-                    className="px-4 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-2"
-                    style={{
-                      background: 'rgba(255, 86, 48, 0.08)',
-                      color: '#FFAC82',
-                      height: '36px'
+                    onClick={() => {
+                      if (!deleteLoading) {
+                        setDeleteModal({ open: false, connectorId: null, connectorName: '', isOwner: false });
+                        setDeleteError('');
+                      }
                     }}
+                    className="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-white/70 hover:text-white transition-colors"
+                    style={{ background: 'rgba(255,255,255,0.04)' }}
+                    disabled={deleteLoading}
                   >
                     Cancel
                   </button>
                   <button
                     onClick={deleteModal.isOwner ? confirmDelete : confirmUninstall}
-                    className="px-4 py-2 rounded-lg text-xs font-medium transition-all flex items-center gap-2"
+                    className="px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all disabled:opacity-50 flex items-center gap-1.5"
                     style={{
-                      background: deleteModal.isOwner 
-                        ? 'rgba(255, 86, 48, 0.2)' 
-                        : 'rgba(19, 245, 132, 0.2)',
-                      color: deleteModal.isOwner ? '#FF6B6B' : '#9EFBCD',
-                      border: `1px solid ${deleteModal.isOwner ? 'rgba(255, 86, 48, 0.3)' : 'rgba(19, 245, 132, 0.3)'}`,
-                      height: '36px'
+                      background: deleteModal.isOwner ? 'rgba(255, 86, 48, 0.15)' : 'rgba(19, 245, 132, 0.12)',
+                      color: deleteModal.isOwner ? '#FF8A8A' : '#9EFBCD'
                     }}
+                    disabled={deleteLoading}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                    {deleteModal.isOwner ? 'Delete' : 'Remove'}
+                    {deleteLoading ? 'Processing...' : deleteModal.isOwner ? 'Delete' : 'Remove'}
                   </button>
                 </div>
               </div>
