@@ -10,11 +10,13 @@ import { useWebSocketStream } from "../hooks/useWebSocketStream.js";
 import ConfigPanel from "./ConfigPanel.js";
 import ConsolePanel from "./ConsolePanel.js";
 import TriggerManager from "./TriggerManager.js";
+import CreateCredentialModal from "./CreateCredentialModal";
 import TemplateGallery from "./TemplateGallery.js";
 import ComponentLibraryPanel from "./ComponentLibraryPanel.js";
+import CreateComponentModal from "./CreateComponentModal.js";
 import FlowChatbotPanel from "./FlowChatbotPanel.js";
 import ConnectorPanel from "./ConnectorPanel.js";
-import { Play, Save, Layers, Zap, Download, Upload, Key, Activity, Settings, Sparkles, Package, AlertCircle, CheckCircle, GripHorizontal, Bot, MessageSquare, Plug, Target, Globe, Brain, GitBranch, Clock, FileText, ArrowLeft, Search, X } from "lucide-react";
+import { Play, Save, Layers, Zap, Download, Upload, Key, Activity, Settings, Sparkles, Package, AlertCircle, CheckCircle, GripHorizontal, Bot, MessageSquare, Plug, Target, Globe, Brain, GitBranch, Clock, FileText, Search, X } from "lucide-react";
 
 const MINIBAR_ICONS = {
   components: "/textflow-icons/textflow_btn_1.png",
@@ -128,8 +130,12 @@ function FlowContent({ assistantId }) {
   });
   const [isEditingName, setIsEditingName] = useState(false);
   const [showTriggerManager, setShowTriggerManager] = useState(false);
+  const [showCreateCredentialModal, setShowCreateCredentialModal] = useState(false);
+  const [credentialRefreshKey, setCredentialRefreshKey] = useState(0);
   const [showTemplateGallery, setShowTemplateGallery] = useState(false);
   const [showComponentLibrary, setShowComponentLibrary] = useState(false);
+  const [showCreateComponentModal, setShowCreateComponentModal] = useState(false);
+  const [componentRefreshTrigger, setComponentRefreshTrigger] = useState(0);
   const [showConnectorPanel, setShowConnectorPanel] = useState(false);
   const [showComponentModal, setShowComponentModal] = useState(false);
   const [componentSearch, setComponentSearch] = useState("");
@@ -152,7 +158,7 @@ function FlowContent({ assistantId }) {
   const resizeStartHeight = useRef(0);
 
   const componentDropdownOffset = consoleCollapsed ? 140 : Math.min(consoleHeight + 160, 520);
-  const chatbotBottomOffset = consoleCollapsed ? 24 : consoleHeight + 24;
+  const chatbotBottomOffset = consoleCollapsed ? 24 : consoleHeight + 10;
   const filteredComponents = useMemo(() => {
     const query = componentSearch.trim().toLowerCase();
     if (!query) return COMPONENT_OPTIONS;
@@ -710,7 +716,9 @@ function FlowContent({ assistantId }) {
             className="text-white/70 hover:text-white transition-colors p-1"
             aria-label="Go back"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3.5} d="M15 19l-7-7 7-7" />
+            </svg>
           </button>
           <div className="flex items-center gap-4">
             {isEditingName ? (
@@ -766,10 +774,10 @@ function FlowContent({ assistantId }) {
               </h1>
             )}
             <span
-              className={`text-[9px] font-medium uppercase tracking-[0.25em] px-2 py-0.5 rounded-md ${
+              className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-semibold font-["Public Sans",sans-serif] ${
                 isConnected()
-                  ? "bg-emerald-500/10 text-emerald-200"
-                  : "bg-white/5 text-white/70"
+                  ? "bg-[rgba(19,245,132,0.12)] text-[#9EFBCD]"
+                  : "bg-white/10 text-white/70"
               }`}
             >
               {isConnected() ? "Connected" : "Disconnected"}
@@ -778,19 +786,19 @@ function FlowContent({ assistantId }) {
         </div>
 
         <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3">
-          <p className={`text-xs ${flowActive ? 'text-emerald-300' : 'text-white/60'}`}>
+          <p className={`text-[10px] ${flowActive ? 'text-emerald-300' : 'text-white/60'}`}>
             {flowActive ? 'Active' : 'Disabled'}
           </p>
           <button
             type="button"
-            className={`relative inline-flex h-6 w-12 items-center rounded-full border transition-colors ${
+            className={`relative inline-flex h-5 w-10 items-center rounded-full border transition-colors ${
               flowActive ? 'bg-emerald-500/30 border-emerald-400/50' : 'bg-white/5 border-white/15'
             }`}
             onClick={() => setFlowActive((prev) => !prev)}
           >
             <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                flowActive ? 'translate-x-6' : 'translate-x-1'
+              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                flowActive ? 'translate-x-5' : 'translate-x-1'
               }`}
             />
           </button>
@@ -927,7 +935,7 @@ function FlowContent({ assistantId }) {
         {/* AI Chatbot Panel - Right Side */}
         {showChatbot && !chatbotMinimized && (
           <div
-            className="absolute right-0 top-0 w-[420px] flex-shrink-0 p-4 pl-0 z-20 pointer-events-none"
+            className="absolute right-0 top-4 w-[420px] flex-shrink-0 p-4 pl-0 z-20 pointer-events-none"
             style={{ bottom: `${chatbotBottomOffset}px` }}
           >
             <div className="relative h-full">
@@ -1147,9 +1155,8 @@ function FlowContent({ assistantId }) {
 
         {/* Resizable Console Panel */}
         <div 
-          className="absolute bottom-0 left-0 right-0 transition-all duration-300 overflow-hidden cursor-pointer z-20" 
+          className="absolute bottom-0 left-0 right-0 transition-all duration-300 overflow-hidden z-20" 
           style={{ height: consoleCollapsed ? '40px' : consoleHeight, paddingBottom: consoleCollapsed ? '0' : '1rem' }}
-          onClick={() => setConsoleCollapsed(!consoleCollapsed)}
         >
         {/* Resize Handle */}
         {!consoleCollapsed && (
@@ -1167,7 +1174,7 @@ function FlowContent({ assistantId }) {
         )}
         {!consoleCollapsed && (
           <div className="h-full pt-2">
-            <ConsolePanel />
+            <ConsolePanel onClose={() => setConsoleCollapsed(true)} />
           </div>
         )}
         </div>
@@ -1191,11 +1198,22 @@ function FlowContent({ assistantId }) {
 
       {/* Other Modals */}
       {showTriggerManager && (
-        <TriggerManager 
-          assistantId={assistantId} 
-          onClose={() => setShowTriggerManager(false)} 
+        <TriggerManager
+          assistantId={assistantId}
+          onClose={() => setShowTriggerManager(false)}
+          onOpenCreateCredential={() => setShowCreateCredentialModal(true)}
+          credentialsRefreshKey={credentialRefreshKey}
         />
       )}
+      <CreateCredentialModal
+        isOpen={showCreateCredentialModal}
+        onClose={() => setShowCreateCredentialModal(false)}
+        assistantId={assistantId}
+        onSuccess={() => {
+          setShowCreateCredentialModal(false);
+          setCredentialRefreshKey((prev) => prev + 1);
+        }}
+      />
 
       {showTemplateGallery && (
         <TemplateGallery
@@ -1212,6 +1230,21 @@ function FlowContent({ assistantId }) {
           nodeType={selectedNodeType}
           onSelectComponent={handleSelectComponent}
           onClose={() => setShowComponentLibrary(false)}
+          onOpenCreateModal={() => setShowCreateComponentModal(true)}
+          refreshTrigger={componentRefreshTrigger}
+        />
+      )}
+
+      {showCreateComponentModal && (
+        <CreateComponentModal
+          isOpen={showCreateComponentModal}
+          onClose={() => setShowCreateComponentModal(false)}
+          assistantId={assistantId}
+          nodeType={selectedNodeType}
+          onSuccess={() => {
+            // Trigger refresh of ComponentLibraryPanel
+            setComponentRefreshTrigger(prev => prev + 1);
+          }}
         />
       )}
 
@@ -1271,7 +1304,7 @@ function FlowContent({ assistantId }) {
                     Components
                   </p>
                 </div>
-              </div>
+                </div>
 
               {/* Search Section */}
               <div
@@ -1308,10 +1341,10 @@ function FlowContent({ assistantId }) {
                     }}
                   />
                 </div>
-              </div>
+                </div>
 
               {/* Component List */}
-              <div
+                <div
                 className="component-scroll w-full overflow-y-auto"
                 style={{
                   padding: '0px 16px',
@@ -1320,56 +1353,56 @@ function FlowContent({ assistantId }) {
                   flexDirection: 'column',
                   height: '305px'
                 }}
-              >
-                {filteredComponents.length === 0 && (
+                >
+                  {filteredComponents.length === 0 && (
                   <div 
                     className="rounded-2xl border border-dashed bg-white/5 p-5 text-center text-white/60"
                     style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}
                   >
                     <p style={{ fontSize: '11px' }}>No components match "{componentSearch}".</p>
-                  </div>
-                )}
+                    </div>
+                  )}
 
-                {filteredComponents.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <button
-                      key={item.type}
-                      onClick={() => {
-                        const id = `${item.type}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-                        const existingNodes = nodes.length;
-                        const x = 100 + (existingNodes % 3) * 280;
-                        const y = 100 + Math.floor(existingNodes / 3) * 160;
+                  {filteredComponents.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.type}
+                        onClick={() => {
+                          const id = `${item.type}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+                          const existingNodes = nodes.length;
+                          const x = 100 + (existingNodes % 3) * 280;
+                          const y = 100 + Math.floor(existingNodes / 3) * 160;
 
-                        const node = {
-                          id,
-                          type: item.type,
-                          position: { x, y },
-                          data: {
-                            label: item.label,
-                            config: {}
+                          const node = {
+                            id,
+                            type: item.type,
+                            position: { x, y },
+                            data: {
+                              label: item.label,
+                              config: {}
+                            }
+                          };
+
+                          setNodes([...nodes, node]);
+                          tf.setSelection(id);
+
+                          if (!tf.flow.entryNodeId || item.type === "start") {
+                            tf.setFlow({ entryNodeId: id });
                           }
-                        };
 
-                        setNodes([...nodes, node]);
-                        tf.setSelection(id);
+                          tf.appendConsole({
+                            ts: Date.now(),
+                            kind: "info",
+                            text: `Added ${item.type} node`
+                          });
 
-                        if (!tf.flow.entryNodeId || item.type === "start") {
-                          tf.setFlow({ entryNodeId: id });
-                        }
-
-                        tf.appendConsole({
-                          ts: Date.now(),
-                          kind: "info",
-                          text: `Added ${item.type} node`
-                        });
-
-                        setComponentSearch("");
-                        setShowComponentModal(false);
-                      }}
+                          setComponentSearch("");
+                          setShowComponentModal(false);
+                        }}
                       className="w-full flex items-center text-left"
                       style={{ gap: '7px' }}
-                    >
+                      >
                       <div 
                         className="flex items-center justify-center relative"
                         style={{
@@ -1385,7 +1418,7 @@ function FlowContent({ assistantId }) {
                           className="h-4 w-4" 
                           style={{ color: getComponentIconStyle(item.type).iconColor }}
                         />
-                      </div>
+                        </div>
                       <div className="flex-1 flex flex-col" style={{ gap: '4px' }}>
                         <p 
                           className="text-white"
@@ -1409,10 +1442,10 @@ function FlowContent({ assistantId }) {
                         >
                           {item.description}
                         </p>
-                      </div>
-                    </button>
-                  );
-                })}
+                        </div>
+                      </button>
+                    );
+                  })}
               </div>
             </div>
           </div>

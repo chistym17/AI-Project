@@ -24,7 +24,7 @@ const firstLineTitle = titleWords.slice(0, 3).join(" ");
 const remainingTitle = titleWords.slice(3).join(" ");
 const descriptionText = truncate(template?.description || "No description provided", 60);
   return (
-    <div
+    <div 
       className="rounded-2xl border overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-lg group node-card-surface"
       style={{
         borderColor: 'rgba(255, 255, 255, 0.12)',
@@ -93,8 +93,8 @@ const descriptionText = truncate(template?.description || "No description provid
         {/* Actions */}
         <div className="flex items-center gap-2 pt-3 border-t border-white/5">
           <div className="flex-1 flex">
-            <button
-              onClick={() => onSelect(template)}
+          <button
+            onClick={() => onSelect(template)}
               className="px-2 py-1.5 rounded-xl text-[10px] font-semibold transition-all text-left"
               style={{
                 background: "rgba(19, 245, 132, 0.12)",
@@ -102,9 +102,9 @@ const descriptionText = truncate(template?.description || "No description provid
               }}
             >
               Use
-            </button>
+          </button>
           </div>
-          <button
+          <button 
             className="px-2 py-1 text-white/70 hover:text-white transition-colors"
             title="Share"
           >
@@ -828,7 +828,7 @@ export default function TemplateGallery({ assistantId, onSelectTemplate, onClose
       >
         {/* Header */}
         <div className="px-6 py-3 flex items-center justify-between">
-          <div>
+            <div>
             <h2 className="text-base font-semibold text-white/90 tracking-tight">Template Library</h2>
             <p className="text-[11px] text-white/60">Discover and reuse flow templates</p>
           </div>
