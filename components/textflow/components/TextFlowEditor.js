@@ -1292,13 +1292,14 @@ function FlowContent({ assistantId }) {
               >
                 <div className="flex-1">
                   <p 
-                    className="text-white"
+                    className="text-white/90"
                     style={{
                       fontFamily: 'Public Sans, sans-serif',
-                      fontWeight: 600,
-                      fontSize: '16px',
-                      lineHeight: '1.5em',
-                      textTransform: 'uppercase'
+                      fontWeight: 500,
+                      fontSize: '14px',
+                      lineHeight: '1.4em',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.08em'
                     }}
                   >
                     Components
@@ -1319,8 +1320,8 @@ function FlowContent({ assistantId }) {
                     borderWidth: '1px',
                     borderStyle: 'solid',
                     background: 'rgba(255, 255, 255, 0.04)',
-                    padding: '0px 14px',
-                    height: '40px'
+                    padding: '0px 12px',
+                    height: '32px'
                   }}
                 >
                   <div className="flex items-center" style={{ padding: '0px 8px 0px 0px' }}>
@@ -1330,13 +1331,13 @@ function FlowContent({ assistantId }) {
                     type="text"
                     value={componentSearch}
                     onChange={(e) => setComponentSearch(e.target.value)}
-                    placeholder="Search"
+                    placeholder="Search components"
                     className="flex-1 border-0 bg-transparent text-white placeholder:text-white/40 focus:outline-none"
                     style={{
                       fontFamily: 'Public Sans, sans-serif',
                       fontWeight: 400,
-                      fontSize: '13px',
-                      lineHeight: '1.4666666666666666em',
+                      fontSize: '12px',
+                      lineHeight: '1.4em',
                       padding: 0
                     }}
                   />

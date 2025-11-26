@@ -5,6 +5,7 @@ import {
   Tag, User, Calendar, Plus, X, Check, Copy, Code, MessageSquare, AlertCircle, Shield 
 } from "lucide-react";
 import Editor from "@monaco-editor/react";
+import SaveTemplateModal from "./SaveTemplateModal";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'https://176.9.16.194:5403/api';
 
@@ -120,36 +121,34 @@ const descriptionText = truncate(template?.description || "No description provid
 // TEMPLATE DISCOVERY TAB
 // ============================================================================
 
-function TemplateDiscovery({ assistantId, onSelectTemplate, onClose }) {
+function TemplateDiscovery({ assistantId, onSelectTemplate, onClose, mode = "browse" }) {
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [sortBy, setSortBy] = useState("trending");
   const [favorites, setFavorites] = useState([]);
-  const [selectedTab, setSelectedTab] = useState("discover");
+  const showCategories = mode === "browse";
 
   const categories = ["all", "api", "data", "notification", "database", "ai"];
 
   useEffect(() => {
-    if (selectedTab === "discover" || selectedTab === "trending") {
-      loadTemplates();
-    }
-  }, [sortBy, selectedCategory, selectedTab]);
+    loadTemplates();
+  }, [sortBy, selectedCategory, mode]);
 
   const loadTemplates = async () => {
     try {
       setLoading(true);
       
       let url;
-      if (selectedTab === "trending") {
+      if (mode === "trending") {
         url = `${API_BASE}/templates/discover/trending?limit=50`;
       } else {
         url = new URL(`${API_BASE}/templates/flow/list`);
         url.searchParams.append("public_only", "true");
         url.searchParams.append("limit", "50");
         
-        if (selectedCategory !== "all") {
+        if (showCategories && selectedCategory !== "all") {
           url.searchParams.append("category", selectedCategory);
         }
       }
@@ -200,27 +199,6 @@ function TemplateDiscovery({ assistantId, onSelectTemplate, onClose }) {
 
   return (
     <div className="space-y-4 h-full flex flex-col">
-      {/* Tabs */}
-      <div className="flex gap-1 px-4 pt-3">
-        {["discover", "trending", "favorites"].map(tab => (
-          <button
-            key={tab}
-            onClick={() => setSelectedTab(tab)}
-            className={`px-2.5 py-1.5 text-[10px] font-semibold rounded-md transition-all ${
-              selectedTab === tab
-                ? "bg-[rgba(19,245,132,0.08)] text-[#9EFBCD]"
-                : "text-white/60 hover:text-white/80"
-            }`}
-          >
-            {tab === "discover" && "Browse"}
-            {tab === "trending" && <TrendingUp className="w-3 h-3 inline mr-1 opacity-80" />}
-            {tab === "trending" && "Trending"}
-            {tab === "favorites" && <Heart className="w-3 h-3 inline mr-1 opacity-80" />}
-            {tab === "favorites" && "Saved"}
-          </button>
-        ))}
-      </div>
-
       {/* Search & Filters */}
       <div className="px-4 space-y-3">
         <div className="relative">
@@ -238,7 +216,7 @@ function TemplateDiscovery({ assistantId, onSelectTemplate, onClose }) {
           />
         </div>
 
-        {selectedTab === "discover" && (
+        {showCategories && (
           <div className="flex gap-1.5 overflow-x-auto pb-2">
             {categories.map(cat => (
               <button
@@ -306,45 +284,11 @@ function TemplateDiscovery({ assistantId, onSelectTemplate, onClose }) {
 // MY TEMPLATES - FIXED
 // ============================================================================
 
-function MyTemplates({ assistantId, onSelectTemplate, onClose, onGetCurrentFlow }) {
+function MyTemplates({ assistantId, onSelectTemplate, onClose, refreshKey = 0, onOpenSaveModal }) {
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [showCreateModal, setShowCreateModal] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
-  const categoryRef = useRef(null);
-  const [newTemplate, setNewTemplate] = useState({
-    name: "",
-    description: "",  // FIXED: Initialize as empty string
-    category: "general",
-    tags: "",
-    is_public: false
-  });
-
-  const categories = [
-    { value: 'general', label: 'General' },
-    { value: 'api', label: 'API Integration' },
-    { value: 'data', label: 'Data Processing' },
-    { value: 'notification', label: 'Notification' },
-    { value: 'database', label: 'Database' },
-    { value: 'ai', label: 'AI/ML' }
-  ];
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (categoryRef.current && !categoryRef.current.contains(event.target)) {
-        setCategoryDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    loadMyTemplates();
-  }, []);
 
   const loadMyTemplates = async () => {
     try {
@@ -353,7 +297,7 @@ function MyTemplates({ assistantId, onSelectTemplate, onClose, onGetCurrentFlow 
         `${API_BASE}/templates/flow/list?assistant_id=${assistantId}&public_only=false`
       );
       if (!response.ok) throw new Error("Failed to load templates");
-      
+
       const data = await response.json();
       setTemplates(data);
     } catch (err) {
@@ -364,79 +308,9 @@ function MyTemplates({ assistantId, onSelectTemplate, onClose, onGetCurrentFlow 
     }
   };
 
-  const handleCreateTemplate = async () => {
-    if (!newTemplate.name.trim()) {
-      setError("Template name is required");
-      return;
-    }
-
-    if (!onGetCurrentFlow) {
-      setError("Cannot save template: no flow data available");
-      return;
-    }
-
-    const currentFlow = onGetCurrentFlow();
-    
-    if (!currentFlow.nodes || currentFlow.nodes.length === 0) {
-      setError("Cannot save empty flow as template");
-      return;
-    }
-
-    try {
-      const tags = newTemplate.tags
-        .split(",")
-        .map(t => t.trim())
-        .filter(Boolean);
-
-      const payload = {
-        name: newTemplate.name,
-        description: newTemplate.description || null,  // FIXED: Send null if empty
-        category: newTemplate.category,
-        flow_data: currentFlow,
-        tags: tags,
-        is_public: newTemplate.is_public
-      };
-
-      const response = await fetch(
-        `${API_BASE}/templates/flow/create?assistant_id=${assistantId}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || "Failed to create template");
-      }
-      
-      const data = await response.json();
-      
-      setShowCreateModal(false);
-      setNewTemplate({ 
-        name: "", 
-        description: "",  // FIXED: Reset to empty string
-        category: "general", 
-        tags: "",
-        is_public: false 
-      });
-      
-      // FIXED: Show warning if credentials were sanitized
-      if (data.sanitized) {
-        setSuccess(`Template "${newTemplate.name}" created! (Credentials removed for security)`);
-      } else {
-        setSuccess(`Template "${newTemplate.name}" created successfully!`);
-      }
-      
-      setError("");
-      setTimeout(() => setSuccess(""), 5000);
-      loadMyTemplates();
-    } catch (err) {
-      setError(err.message || "Failed to create template");
-      console.error("Failed to create template:", err);
-    }
-  };
+  useEffect(() => {
+    loadMyTemplates();
+  }, [assistantId, refreshKey]);
 
   const handleDeleteTemplate = async (templateId) => {
     if (!window.confirm("Delete this template? This cannot be undone.")) return;
@@ -448,7 +322,7 @@ function MyTemplates({ assistantId, onSelectTemplate, onClose, onGetCurrentFlow 
       );
 
       if (!response.ok) throw new Error("Failed to delete template");
-      
+
       setSuccess("Template deleted");
       setTimeout(() => setSuccess(""), 2000);
       loadMyTemplates();
@@ -466,17 +340,19 @@ function MyTemplates({ assistantId, onSelectTemplate, onClose, onGetCurrentFlow 
           <h3 className="text-sm font-semibold text-white/90">My Templates</h3>
           <p className="text-[11px] text-white/50">{templates.length} templates</p>
         </div>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="px-3 py-1.5 rounded-lg text-[11px] font-semibold flex items-center gap-1 transition-all"
-          style={{
-            background: "rgba(19, 245, 132, 0.12)",
-            color: "#9EFBCD",
-          }}
-        >
-          <Plus className="w-3 h-3" />
-          Save Current
-        </button>
+        {onOpenSaveModal && (
+          <button
+            onClick={onOpenSaveModal}
+            className="px-3 py-1.5 rounded-lg text-[11px] font-semibold flex items-center gap-1 transition-all"
+            style={{
+              background: "rgba(19, 245, 132, 0.12)",
+              color: "#9EFBCD",
+            }}
+          >
+            <Plus className="w-3 h-3" />
+            Save Current
+          </button>
+        )}
       </div>
 
       {/* Alerts */}
@@ -525,17 +401,16 @@ function MyTemplates({ assistantId, onSelectTemplate, onClose, onGetCurrentFlow 
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1">
-                    <h4 className="text-sm font-semibold text-white/90">{template.name}</h4>
-                  {/* FIXED: Show description properly */}
-                    <p className="text-[11px] text-white/50 mt-1 line-clamp-2">
+                  <h4 className="text-sm font-semibold text-white/90">{template.name}</h4>
+                  <p className="text-[11px] text-white/50 mt-1 line-clamp-2">
                     {template.description || "No description"}
                   </p>
-                    <div className="flex items-center gap-3 mt-2 text-[10px] text-white/50">
-                    <span 
+                  <div className="flex items-center gap-3 mt-2 text-[10px] text-white/50">
+                    <span
                       className="px-2 py-0.5 rounded capitalize"
                       style={{
-                          background: 'rgba(255, 255, 255, 0.08)',
-                          color: 'rgba(255,255,255,0.7)'
+                        background: 'rgba(255, 255, 255, 0.08)',
+                        color: 'rgba(255,255,255,0.7)'
                       }}
                     >
                       {template.category}
@@ -557,18 +432,14 @@ function MyTemplates({ assistantId, onSelectTemplate, onClose, onGetCurrentFlow 
                       onClose();
                     }}
                     className="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-[#9EFBCD] transition-all"
-                    style={{
-                      background: "rgba(19, 245, 132, 0.12)",
-                    }}
+                    style={{ background: 'rgba(19, 245, 132, 0.12)' }}
                   >
                     Use
                   </button>
                   <button
                     onClick={() => handleDeleteTemplate(template.template_id)}
                     className="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-red-300 transition-all"
-                    style={{
-                      background: 'rgba(255, 72, 72, 0.1)'
-                    }}
+                    style={{ background: 'rgba(255, 72, 72, 0.1)' }}
                   >
                     Delete
                   </button>
@@ -579,220 +450,7 @@ function MyTemplates({ assistantId, onSelectTemplate, onClose, onGetCurrentFlow 
         )}
       </div>
 
-      {/* Backdrop overlay to blur parent modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 z-[50] flex items-center justify-center p-4">
-          <div 
-            className="absolute inset-0 bg-black/50 backdrop-blur-md transition-all duration-200" 
-            onClick={() => {
-              setShowCreateModal(false);
-              setError("");
-            }}
-            style={{ pointerEvents: 'auto' }}
-          />
-        </div>
-      )}
-
-      {/* Create Template Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <div 
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm" 
-            onClick={() => {
-              setShowCreateModal(false);
-              setError("");
-            }}
-          />
-          
-          {/* Modal */}
-          <div 
-            className="relative rounded-3xl max-w-md w-full shadow-2xl p-6 space-y-4"
-            style={{
-              background: 'rgba(20, 25, 35, 0.65)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              border: '1.5px solid rgba(255, 255, 255, 0.2)',
-              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)'
-            }}
-          >
-            <div className="flex items-center justify-between sticky top-0 pb-4 border-b" style={{ background: 'rgba(20, 25, 35, 0.65)', borderColor: 'rgba(255, 255, 255, 0.15)' }}>
-              <h3 className="text-xl font-bold" style={{ color: 'rgba(255, 255, 255, 1)', fontWeight: 700 }}>Save as Template</h3>
-              <button
-                onClick={() => {
-                  setShowCreateModal(false);
-                  setError("");
-                }}
-                className="w-7 h-7 flex items-center justify-center transition-colors rounded-lg hover:bg-white/10"
-                style={{ color: 'rgba(255, 255, 255, 0.9)' }}
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              <div>
-                <label className="text-sm block mb-2" style={{ color: 'rgba(255, 255, 255, 0.95)', fontWeight: 600 }}>
-                  Template Name *
-                </label>
-                <input
-                  type="text"
-                  value={newTemplate.name}
-                  onChange={(e) => setNewTemplate({...newTemplate, name: e.target.value})}
-                  placeholder="My Awesome Flow"
-                  className="w-full px-3 py-2.5 rounded-lg text-sm transition-colors focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.12)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    color: 'rgba(255, 255, 255, 1)',
-                    fontWeight: 500
-                  }}
-                />
-              </div>
-
-              <div>
-                <label className="text-sm block mb-2" style={{ color: 'rgba(255, 255, 255, 0.95)', fontWeight: 600 }}>
-                  Description
-                </label>
-                <textarea
-                  value={newTemplate.description}
-                  onChange={(e) => setNewTemplate({...newTemplate, description: e.target.value})}
-                  placeholder="What does this template do?"
-                  rows={3}
-                  className="w-full px-3 py-2.5 rounded-lg text-sm transition-colors resize-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.12)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    color: 'rgba(255, 255, 255, 1)',
-                    fontWeight: 500
-                  }}
-                />
-              </div>
-
-              <div ref={categoryRef} className="relative">
-                <label className="text-sm block mb-2" style={{ color: 'rgba(255, 255, 255, 0.95)', fontWeight: 600 }}>
-                  Category
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
-                  className="w-full px-3 py-2.5 rounded-lg text-sm transition-colors focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-left flex items-center justify-between"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.12)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    color: 'rgba(255, 255, 255, 1)',
-                    fontWeight: 500
-                  }}
-                >
-                  <span>{categories.find(c => c.value === newTemplate.category)?.label || 'General'}</span>
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {categoryDropdownOpen && (
-                  <div
-                    className="absolute z-50 w-full mt-1 rounded-lg shadow-lg overflow-hidden"
-                    style={{
-                      background: '#1A1F2E',
-                      border: '1px solid rgba(255, 255, 255, 0.2)'
-                    }}
-                  >
-                    {categories.map((category) => (
-                      <button
-                        key={category.value}
-                        type="button"
-                        onClick={() => {
-                          setNewTemplate({...newTemplate, category: category.value});
-                          setCategoryDropdownOpen(false);
-                        }}
-                        className="w-full px-3 py-2 text-left text-sm text-white hover:bg-emerald-500/20 transition-colors"
-                        style={{
-                          background: newTemplate.category === category.value 
-                            ? 'rgba(19, 245, 132, 0.2)' 
-                            : 'transparent',
-                          color: newTemplate.category === category.value ? '#9EFBCD' : '#FFFFFF'
-                        }}
-                      >
-                        {category.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="text-sm block mb-2" style={{ color: 'rgba(255, 255, 255, 0.95)', fontWeight: 600 }}>
-                  Tags (comma-separated)
-                </label>
-                <input
-                  type="text"
-                  value={newTemplate.tags}
-                  onChange={(e) => setNewTemplate({...newTemplate, tags: e.target.value})}
-                  placeholder="api, automation, webhook"
-                  className="w-full px-3 py-2.5 rounded-lg text-sm transition-colors focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.12)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    color: 'rgba(255, 255, 255, 1)',
-                    fontWeight: 500
-                  }}
-                />
-              </div>
-
-              {/* FIXED: Public toggle with clear security warning */}
-              <div className="bg-yellow-950/20 border border-yellow-800/50 rounded-lg p-3">
-                <label className="flex items-start gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={newTemplate.is_public}
-                    onChange={(e) => setNewTemplate({...newTemplate, is_public: e.target.checked})}
-                    className="rounded mt-0.5"
-                  />
-                  <div className="flex-1">
-                    <span className="text-sm font-semibold flex items-center gap-2" style={{ color: 'rgba(255, 255, 255, 0.95)' }}>
-                      <Shield className="w-4 h-4" />
-                      Make public (share with community)
-                    </span>
-                    <p className="text-xs mt-1" style={{ color: 'rgba(253, 224, 71, 1)', fontWeight: 500 }}>
-                      ⚠️ Security: All credential IDs and sensitive data will be automatically removed from public templates
-                    </p>
-                  </div>
-                </label>
-              </div>
-            </div>
-
-            <div className="flex gap-3 pt-4 border-t" style={{ borderColor: 'rgba(255, 255, 255, 0.15)' }}>
-              <button
-                onClick={() => {
-                  setShowCreateModal(false);
-                  setError("");
-                }}
-                className="flex-1 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.12)',
-                  color: 'rgba(255, 255, 255, 1)',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  fontWeight: 600
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreateTemplate}
-                disabled={!newTemplate.name.trim()}
-                className="flex-1 px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 rounded-lg text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                style={{
-                  color: 'rgba(255, 255, 255, 1)',
-                  fontWeight: 600,
-                  boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
-                }}
-              >
-                Save Template
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        {/* Tip section removed */}
     </div>
   );
 }
@@ -802,13 +460,16 @@ function MyTemplates({ assistantId, onSelectTemplate, onClose, onGetCurrentFlow 
 // ============================================================================
 
 export default function TemplateGallery({ assistantId, onSelectTemplate, onClose, onGetCurrentFlow }) {
-  const [activeTab, setActiveTab] = useState("discover");
+  const [activeTab, setActiveTab] = useState("browse");
+  const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
+  const [myTemplatesRefreshKey, setMyTemplatesRefreshKey] = useState(0);
 
   const handleSelectTemplate = (template) => {
     onSelectTemplate(template);
   };
 
   return (
+    <>
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div 
@@ -844,7 +505,9 @@ export default function TemplateGallery({ assistantId, onSelectTemplate, onClose
         {/* Tabs */}
         <div className="px-6 pb-2 flex gap-1">
           {[
-            { id: "discover", label: "Discover", icon: Sparkles },
+            { id: "browse", label: "Browse", icon: Sparkles },
+            { id: "trending", label: "Trending", icon: TrendingUp },
+            { id: "saved", label: "Saved", icon: Heart },
             { id: "my-templates", label: "My Templates", icon: Code }
           ].map(tab => {
             const Icon = tab.icon;
@@ -867,11 +530,28 @@ export default function TemplateGallery({ assistantId, onSelectTemplate, onClose
 
         {/* Content */}
         <div className="flex-1 overflow-hidden">
-          {activeTab === "discover" && (
+          {activeTab === "browse" && (
             <TemplateDiscovery
               assistantId={assistantId}
               onSelectTemplate={handleSelectTemplate}
               onClose={onClose}
+              mode="browse"
+            />
+          )}
+          {activeTab === "trending" && (
+            <TemplateDiscovery
+              assistantId={assistantId}
+              onSelectTemplate={handleSelectTemplate}
+              onClose={onClose}
+              mode="trending"
+            />
+          )}
+          {activeTab === "saved" && (
+            <TemplateDiscovery
+              assistantId={assistantId}
+              onSelectTemplate={handleSelectTemplate}
+              onClose={onClose}
+              mode="saved"
             />
           )}
           {activeTab === "my-templates" && (
@@ -879,11 +559,25 @@ export default function TemplateGallery({ assistantId, onSelectTemplate, onClose
               assistantId={assistantId}
               onSelectTemplate={handleSelectTemplate}
               onClose={onClose}
-              onGetCurrentFlow={onGetCurrentFlow}  
+              refreshKey={myTemplatesRefreshKey}
+              onOpenSaveModal={() => setShowSaveTemplateModal(true)}
             />
           )}
         </div>
       </div>
     </div>
+    {showSaveTemplateModal && (
+      <SaveTemplateModal
+        isOpen={showSaveTemplateModal}
+        onClose={() => setShowSaveTemplateModal(false)}
+        assistantId={assistantId}
+        onGetCurrentFlow={onGetCurrentFlow}
+        onSuccess={() => {
+          setShowSaveTemplateModal(false);
+          setMyTemplatesRefreshKey((prev) => prev + 1);
+        }}
+      />
+    )}
+    </>
   );
 }

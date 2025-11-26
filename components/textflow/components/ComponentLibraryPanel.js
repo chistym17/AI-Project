@@ -270,8 +270,8 @@ export default function ComponentLibraryPanel({ assistantId, nodeType, onSelectC
         {/* Header */}
         <div className="px-6 py-3 border-b border-white/10 flex items-center justify-between">
           <div>
-            <h2 className="text-base font-semibold text-white/90 tracking-tight">Component Library</h2>
-            <p className="text-[11px] text-white/60">Reusable node configurations</p>
+            <h2 className="text-sm font-medium text-white/85 tracking-tight">Component Library</h2>
+            <p className="text-[10px] text-white/50">Reusable node configurations</p>
           </div>
           <button
             onClick={() => onOpenCreateModal && onOpenCreateModal()}
@@ -286,11 +286,11 @@ export default function ComponentLibraryPanel({ assistantId, nodeType, onSelectC
         </div>
 
         {/* Filters */}
-        <div className="px-6 py-3 border-b border-white/10 flex items-center gap-3">
+        <div className="px-6 py-2 border-b border-white/10 flex items-center gap-3">
           <div className="flex gap-1.5 flex-wrap">
             <button
               onClick={() => setFilterByType("all")}
-              className="px-3 py-1.5 rounded-md text-[11px] font-semibold transition-all"
+              className="px-3 py-1 rounded-md text-[10px] font-semibold transition-all"
               style={
                 filterByType === "all"
                   ? {
@@ -309,7 +309,7 @@ export default function ComponentLibraryPanel({ assistantId, nodeType, onSelectC
               <button
                 key={type}
                 onClick={() => setFilterByType(type)}
-                className="px-3 py-1.5 rounded-md text-[11px] font-semibold capitalize transition-all"
+                className="px-3 py-1 rounded-md text-[10px] font-semibold capitalize transition-all"
                 style={
                   filterByType === type
                     ? {
