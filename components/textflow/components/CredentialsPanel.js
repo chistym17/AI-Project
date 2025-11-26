@@ -7,6 +7,9 @@ export default function CredentialsPanel({ assistantId, refreshKey = 0 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [credentialToDelete, setCredentialToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const loadCredentials = async () => {
     if (!assistantId) {
@@ -43,18 +46,23 @@ export default function CredentialsPanel({ assistantId, refreshKey = 0 }) {
     }
   }, [success]);
 
-  const handleDelete = async (credId) => {
-    if (!window.confirm("Delete this credential? This cannot be undone.")) return;
-    
+  const handleDeleteConfirm = async () => {
+    if (!credentialToDelete) return;
+
+    setDeleteLoading(true);
+    setDeleteError("");
     try {
-      console.log('Deleting credential:', credId);
-      await deleteCredential(credId);
+      console.log('Deleting credential:', credentialToDelete.credential_id);
+      await deleteCredential(credentialToDelete.credential_id);
       setSuccess("Credential deleted");
+      setCredentialToDelete(null);
       await loadCredentials();
     } catch (err) {
       const errorMsg = err.message || 'Failed to delete credential';
-      setError(errorMsg);
+      setDeleteError(errorMsg);
       console.error('Failed to delete credential:', err);
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -210,7 +218,10 @@ export default function CredentialsPanel({ assistantId, refreshKey = 0 }) {
                       </td>
                       <td className="px-2 py-2 text-right">
                         <button
-                          onClick={() => handleDelete(cred.credential_id)}
+                          onClick={() => {
+                            setCredentialToDelete(cred);
+                            setDeleteError("");
+                          }}
                           className="inline-flex items-center justify-center p-1.5 rounded-lg text-[#FF6B6B] hover:bg-[#FF6B6B]/15 transition-colors"
                           title="Delete credential"
                         >
@@ -225,6 +236,81 @@ export default function CredentialsPanel({ assistantId, refreshKey = 0 }) {
           </div>
         )}
       </div>
+
+      {credentialToDelete && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => {
+              if (!deleteLoading) {
+                setCredentialToDelete(null);
+                setDeleteError("");
+              }
+            }}
+          />
+          <div
+            className="relative rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden"
+            style={{
+              background: "rgba(255, 255, 255, 0.04)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+              border: "1px solid rgba(255, 255, 255, 0.12)",
+              borderRadius: "24px"
+            }}
+          >
+            <div className="flex flex-col gap-3 p-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-white/90">Delete Credential</h3>
+                <button
+                  onClick={() => {
+                    if (!deleteLoading) {
+                      setCredentialToDelete(null);
+                      setDeleteError("");
+                    }
+                  }}
+                  className="w-5 h-5 flex items-center justify-center text-white/60 hover:text-white transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <p className="text-[11px] text-white/60">
+                Are you sure you want to delete{" "}
+                <span className="text-white/90 font-semibold">{credentialToDelete.name}</span>?
+                This action cannot be undone.
+              </p>
+              {deleteError && (
+                <div className="bg-red-950/30 border border-red-800/50 rounded-lg p-2 flex items-start gap-2">
+                  <AlertCircle className="w-3.5 h-3.5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-[11px] text-red-300">{deleteError}</span>
+                </div>
+              )}
+              <div className="flex justify-end items-center gap-2 pt-2">
+                <button
+                  onClick={() => {
+                    if (!deleteLoading) {
+                      setCredentialToDelete(null);
+                      setDeleteError("");
+                    }
+                  }}
+                  className="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-white/70 hover:text-white transition-colors"
+                  style={{ background: "rgba(255,255,255,0.04)" }}
+                  disabled={deleteLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteConfirm}
+                  className="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-red-200 transition-all disabled:opacity-50"
+                  style={{ background: "rgba(255, 72, 72, 0.15)" }}
+                  disabled={deleteLoading}
+                >
+                  {deleteLoading ? "Deleting..." : "Delete"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

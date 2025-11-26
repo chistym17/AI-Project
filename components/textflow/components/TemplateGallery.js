@@ -289,6 +289,9 @@ function MyTemplates({ assistantId, onSelectTemplate, onClose, refreshKey = 0, o
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [templateToDelete, setTemplateToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const loadMyTemplates = async () => {
     try {
@@ -312,12 +315,14 @@ function MyTemplates({ assistantId, onSelectTemplate, onClose, refreshKey = 0, o
     loadMyTemplates();
   }, [assistantId, refreshKey]);
 
-  const handleDeleteTemplate = async (templateId) => {
-    if (!window.confirm("Delete this template? This cannot be undone.")) return;
+  const handleDeleteTemplate = async () => {
+    if (!templateToDelete) return;
 
+    setDeleteLoading(true);
+    setDeleteError("");
     try {
       const response = await fetch(
-        `${API_BASE}/templates/flow/${templateId}?assistant_id=${assistantId}`,
+        `${API_BASE}/templates/flow/${templateToDelete.template_id}?assistant_id=${assistantId}`,
         { method: "DELETE" }
       );
 
@@ -326,9 +331,12 @@ function MyTemplates({ assistantId, onSelectTemplate, onClose, refreshKey = 0, o
       setSuccess("Template deleted");
       setTimeout(() => setSuccess(""), 2000);
       loadMyTemplates();
+      setTemplateToDelete(null);
     } catch (err) {
-      setError(err.message);
+      setDeleteError(err.message || "Failed to delete template");
       console.error("Failed to delete template:", err);
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -437,7 +445,10 @@ function MyTemplates({ assistantId, onSelectTemplate, onClose, refreshKey = 0, o
                     Use
                   </button>
                   <button
-                    onClick={() => handleDeleteTemplate(template.template_id)}
+                    onClick={() => {
+                      setTemplateToDelete(template);
+                      setDeleteError("");
+                    }}
                     className="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-red-300 transition-all"
                     style={{ background: 'rgba(255, 72, 72, 0.1)' }}
                   >
@@ -450,7 +461,83 @@ function MyTemplates({ assistantId, onSelectTemplate, onClose, refreshKey = 0, o
         )}
       </div>
 
-        {/* Tip section removed */}
+      {/* Delete Confirmation Modal */}
+      {templateToDelete && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => {
+              if (!deleteLoading) {
+                setTemplateToDelete(null);
+                setDeleteError("");
+              }
+            }}
+          />
+          <div
+            className="relative rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden"
+            style={{
+              background: "rgba(255, 255, 255, 0.04)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+              border: "1px solid rgba(255, 255, 255, 0.12)",
+              borderRadius: "24px"
+            }}
+          >
+            <div className="flex flex-col gap-3 p-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-white/90">Delete Template</h3>
+                <button
+                  onClick={() => {
+                    if (!deleteLoading) {
+                      setTemplateToDelete(null);
+                      setDeleteError("");
+                    }
+                  }}
+                  className="w-5 h-5 flex items-center justify-center text-white/60 hover:text-white transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <p className="text-[11px] text-white/60">
+                Are you sure you want to delete{" "}
+                <span className="text-white/90 font-semibold">
+                  {templateToDelete.name}
+                </span>
+                ? This action cannot be undone.
+              </p>
+              {deleteError && (
+                <div className="bg-red-950/30 border border-red-800/50 rounded-lg p-2 flex items-start gap-2">
+                  <AlertCircle className="w-3.5 h-3.5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-[11px] text-red-300">{deleteError}</span>
+                </div>
+              )}
+              <div className="flex justify-end items-center gap-2 pt-2">
+                <button
+                  onClick={() => {
+                    if (!deleteLoading) {
+                      setTemplateToDelete(null);
+                      setDeleteError("");
+                    }
+                  }}
+                  className="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-white/70 hover:text-white transition-colors"
+                  style={{ background: "rgba(255,255,255,0.04)" }}
+                  disabled={deleteLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteTemplate}
+                  className="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-red-200 transition-all disabled:opacity-50"
+                  style={{ background: "rgba(255, 72, 72, 0.15)" }}
+                  disabled={deleteLoading}
+                >
+                  {deleteLoading ? "Deleting..." : "Delete"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
