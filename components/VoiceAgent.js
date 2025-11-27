@@ -1222,7 +1222,7 @@ const PanelTabs = ({ entries, className = "" }) => {
                   </div>
 
                   <div className="flex-shrink-0 px-3 py-0.5   ">
-                 <div className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                 <div className="grid w-full gap-2 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
 
                     <div
                       className="
@@ -1230,13 +1230,13 @@ const PanelTabs = ({ entries, className = "" }) => {
                         flex flex-col items-start
                         p-4 gap-[5px]
                         w-full max-w-sm
-                        h-[148px]
+                        h-auto min-h-[148px]
                         bg-white/5
                         rounded-[16px]
                       "
                     >
 
-                     <div className="flex flex-row items-start gap-[9px] w-[269.33px] h-[116px]">
+                     <div className="flex flex-row items-start gap-[9px] w-full h-auto">
                     {/* Icon */}
                     <div className="flex items-center justify-center w-[48px] h-[48px] ">
                     <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1251,11 +1251,11 @@ const PanelTabs = ({ entries, className = "" }) => {
                     </div>
 
                     {/* Text stack */}
-                    <div className="flex flex-col items-start gap-1 w-[150px] h-[116px]">
-                      <div className="w-[70px] h-[24px] font-public-sans font-semibold text-[16px] leading-[24px] text-white">
+                    <div className="flex flex-col items-start gap-1 w-full h-auto">
+                      <div className="font-public-sans font-semibold text-[16px] leading-[24px] text-white">
                         Overview
                       </div>
-                      <div className="w-[150px] h-[88px] font-public-sans font-normal text-[14px] leading-[22px] text-white">
+                      <div className="font-public-sans font-normal text-[14px] leading-[22px] text-white">
                         Blumen Café is a contemporary coffeehouse located in the heart of Riyadh...
                       </div>
                     </div>
@@ -1268,12 +1268,12 @@ const PanelTabs = ({ entries, className = "" }) => {
                         flex flex-col items-start
                         p-4 gap-[9px]
                         w-full max-w-sm
-                        h-[148px]
+                        h-auto min-h-[148px]
                         bg-white/5
                         rounded-[16px]
                       "
                     >
-                     <div className="flex flex-row items-start gap-[9px] w-[269.33px] h-[116px]">
+                     <div className="flex flex-row items-start gap-[9px] w-full h-auto">
                     {/* Icon */}
                     <div className="flex items-center justify-center w-[48px] h-[48px] ">
                     <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1288,11 +1288,11 @@ const PanelTabs = ({ entries, className = "" }) => {
                     </div>
 
                     {/* Text stack */}
-                    <div className="flex flex-col items-start gap-1 w-[150px] h-[116px]">
-                      <div className="w-[70px] h-[24px] font-public-sans font-semibold text-[16px] leading-[24px] text-white">
+                    <div className="flex flex-col items-start gap-1 w-full h-auto">
+                      <div className="font-public-sans font-semibold text-[16px] leading-[24px] text-white">
                         Overview
                       </div>
-                      <div className="w-[150px] h-[88px] font-public-sans font-normal text-[14px] leading-[22px] text-white">
+                      <div className="font-public-sans font-normal text-[14px] leading-[22px] text-white">
                         Blumen Café is a contemporary coffeehouse located in the heart of Riyadh...
                       </div>
                     </div>
@@ -1305,12 +1305,12 @@ const PanelTabs = ({ entries, className = "" }) => {
                         flex flex-col items-start
                         p-4 gap-[9px]
                         w-full max-w-sm
-                        h-[148px]
+                        h-auto min-h-[148px]
                         bg-white/5
                         rounded-[16px]
                       "
                     >
-                     <div className="flex flex-row items-start gap-[9px] w-[269.33px] h-[116px]">
+                     <div className="flex flex-row items-start gap-[9px] w-full h-auto">
                     {/* Icon */}
                     <div className="flex items-center justify-center w-[48px] h-[48px] ">
                     <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1325,11 +1325,11 @@ const PanelTabs = ({ entries, className = "" }) => {
                     </div>
 
                     {/* Text stack */}
-                    <div className="flex flex-col items-start gap-1 w-[150px] h-[116px]">
-                      <div className="w-[70px] h-[24px] font-public-sans font-semibold text-[16px] leading-[24px] text-white">
+                    <div className="flex flex-col items-start gap-1 w-full h-auto">
+                      <div className="font-public-sans font-semibold text-[16px] leading-[24px] text-white">
                         Overview
                       </div>
-                      <div className="w-[150px] h-[88px] font-public-sans font-normal text-[14px] leading-[22px] text-white">
+                      <div className="font-public-sans font-normal text-[14px] leading-[22px] text-white">
                         Blumen Café is a contemporary coffeehouse located in the heart of Riyadh...
                       </div>
                     </div>
@@ -1345,12 +1345,13 @@ const PanelTabs = ({ entries, className = "" }) => {
                   <div
                     className="
                       box-border flex flex-col justify-center items-center
-                      p-4 w-full h-[100px]
+                      p-4 w-full h-auto min-h-[100px]
                       bg-white/5 rounded-[16px]
                     "
                   >
 
-                    <div className="flex items-center gap-[88px]">
+                    <div className="flex items-center gap-10 md:gap-[88px]">
+
                       {/* Play Button - Starts recording if not already recording */}
                       <div className="flex items-center p-2 gap-4 w-12 h-12 bg-white/4 rounded-[44px]">
                         <button
@@ -1492,7 +1493,7 @@ const PanelTabs = ({ entries, className = "" }) => {
 
                 </div>
 
-                <div className="flex w-full flex-shrink-0 flex-col gap-4 xl:w-72">
+                <div className="flex w-full flex-shrink-0 flex-col gap-4 lg:w-72">
                   {menu.length > 0 && <MenuPanel />}
                   {offers.length > 0 && <OffersPanel />}
                   <FlowHUD className="lg:hidden" />
