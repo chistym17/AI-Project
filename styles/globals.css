@@ -385,3 +385,36 @@ body {
   transition: top 0.3s ease;
   z-index: 2;
 }
+
+/* Global custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px; /* width of the scrollbar */
+  height: 6px; /* horizontal scrollbar height */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.12); /* scrollbar color */
+  border-radius: 3px;
+  transition: background-color 0.3s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3); /* hover effect */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* track color */
+}
+
+/* Add space on the right for scrollable elements */
+* {
+  scrollbar-width: thin;       /* for Firefox */
+  scrollbar-color: rgba(255,255,255,0.12) transparent;
+}
+
+/* Optional: global padding for all scrollable containers */
+.scrollable {
+  padding-right: 200px; /* space between content and scrollbar */
+  overflow-y: auto;
+}
+

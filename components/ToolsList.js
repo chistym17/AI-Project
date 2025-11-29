@@ -39,6 +39,17 @@ const ToolsList = ({ assistantId, onAdd, onEdit }) => {
   const [successMessage, setSuccessMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("rows_per_page");
+      return saved ? Number(saved) : 5;
+    }
+    return 5;
+  });
+  const [rowsDropdownOpen, setRowsDropdownOpen] = useState(false);
+
+
   const loadTools = async () => {
     setLoading(true);
     try {
@@ -105,6 +116,18 @@ const ToolsList = ({ assistantId, onAdd, onEdit }) => {
 
     return name.includes(query) || description.includes(query) || endpoint.includes(query) || method.includes(query);
   });
+
+  const totalPages = Math.ceil(filteredTools.length / itemsPerPage);
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const currentItems = filteredTools.slice(indexOfFirst, indexOfLast);
+
+  // Navigation
+  const goToFirstPage = () => setCurrentPage(1);
+  const goToPreviousPage = () => setCurrentPage(p => Math.max(1, p - 1));
+  const goToNextPage = () => setCurrentPage(p => Math.min(totalPages, p + 1));
+  const goToLastPage = () => setCurrentPage(totalPages);
+
 
   if (loading) {
     return (
@@ -183,14 +206,14 @@ const ToolsList = ({ assistantId, onAdd, onEdit }) => {
               </button>
             </div>
           ) : (
-            <div className="bg-white/[0.04] backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden">
+            <div className="bg-white/[0.04] backdrop-blur-xl rounded-2xl border border-white/10 ">
               {/* Table */}
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto rounded-tl-2xl rounded-tr-2xl  ">
                 <table className="w-full">
                   {/* Table Header */}
-                  <thead>
+                  <thead className="border-b border-white/10 " >
                       <tr
-                        className="border-b border-white/10"
+                        className="border-b border-white/10 "
                         style={{ background: "rgba(145, 158, 171, 0.08)" }}
                       >
                       <th className="px-4 py-4 text-left">
@@ -228,7 +251,7 @@ const ToolsList = ({ assistantId, onAdd, onEdit }) => {
 
                   {/* Table Body */}
                   <tbody>
-                    {filteredTools.map((tool, index) => (
+                    {currentItems.map((tool, index) => (
                       <tr
                         key={tool.id}
                         className="border-b border-dashed border-white/20 last:border-b-0 hover:bg-white/5 transition-colors animate-fade-in-up"
@@ -322,6 +345,109 @@ const ToolsList = ({ assistantId, onAdd, onEdit }) => {
                   </tbody>
                 </table>
               </div>
+              {/* Footer */}
+                <div className="flex flex-col sm:flex-row items-center justify-end w-full border-t border-[rgba(145,158,171,0.2)] py-1 px-5 bg-white/[0.05] rounded-bl-2xl rounded-br-2xl gap-3">
+
+                  {/* Pagination (right) */}
+                  <div className="flex items-center gap-2 flex-wrap justify-end sm:justify-end mt-2 sm:mt-0">
+
+                    
+                    {/* Rows per page selector */}
+                    <div className="relative flex items-center gap-1">
+                      <span className="text-[12px] text-gray-300 whitespace-nowrap">
+                        Rows per page:
+                      </span>
+
+                      <div
+                        onClick={() => setRowsDropdownOpen(!rowsDropdownOpen)}
+                        className="flex items-center justify-center bg-transparent text-white text-[12px] px-2 py-1 w-[40px] rounded-xl outline-none border border-white/[0.2] hover:bg-white/[0.1] transition-all cursor-pointer"
+                      >
+                        {itemsPerPage === filteredTools.length ? "All" : itemsPerPage}
+                        <span className="ml-1 text-[10px]">▼</span>
+                      </div>
+
+                      {rowsDropdownOpen && (
+                        <div className="absolute left-[85px] top-full mt-[2px] w-[40px] bg-black/80  rounded-lg backdrop-blur-2xl z-50">
+                          {[5, 10, 20, "All"].map((option) => (
+                            <div
+                              key={option}
+                              onClick={() => {
+                                const value = option === "All" ? filteredTools.length : Number(option);
+
+                                setItemsPerPage(value);
+                                localStorage.setItem("rows_per_page", value);   // <-- SAVE TO STORAGE
+
+                                setCurrentPage(1);
+                                setRowsDropdownOpen(false);
+                              }}
+                              className={`px-2 py-1 text-[12px] text-white hover:bg-white/10 rounded-[7px] cursor-pointer text-center ${
+                                (option === "All" && itemsPerPage === filteredTools.length) || option === itemsPerPage
+                                  ? "bg-white/10"
+                                  : ""
+                              }`}
+                            >
+                              {option}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Page info */}
+                    <span className="text-white text-[12px] min-w-[100px] text-center">
+                      Page {totalPages > 0 ? currentPage : 0} of {totalPages}
+                    </span>
+
+                    {/* Navigation Buttons */}
+                    <div className="flex items-center gap-2">
+
+                      {/* First */}
+                      <button
+                        onClick={goToFirstPage}
+                        disabled={currentPage === 1 || totalPages === 0}
+                        className={`w-8 h-8 flex items-center justify-center rounded-[6px] transition-all ${
+                          currentPage === 1 ? "opacity-40 cursor-not-allowed" : "hover:bg-white/[0.08]"
+                        }`}
+                      >
+                        «
+                      </button>
+
+                      {/* Prev */}
+                      <button
+                        onClick={goToPreviousPage}
+                        disabled={currentPage === 1 || totalPages === 0}
+                        className={`w-8 h-8 flex items-center justify-center rounded-[6px] transition-all ${
+                          currentPage === 1 ? "opacity-40 cursor-not-allowed" : "hover:bg-white/[0.08]"
+                        }`}
+                      >
+                        ‹
+                      </button>
+
+                      {/* Next */}
+                      <button
+                        onClick={goToNextPage}
+                        disabled={currentPage === totalPages || totalPages === 0}
+                        className={`w-8 h-8 flex items-center justify-center rounded-[6px] transition-all ${
+                          currentPage === totalPages ? "opacity-40 cursor-not-allowed" : "hover:bg-white/[0.08]"
+                        }`}
+                      >
+                        ›
+                      </button>
+
+                      {/* Last */}
+                      <button
+                        onClick={goToLastPage}
+                        disabled={currentPage === totalPages || totalPages === 0}
+                        className={`w-8 h-8 flex items-center justify-center rounded-[6px] transition-all ${
+                          currentPage === totalPages ? "opacity-40 cursor-not-allowed" : "hover:bg-white/[0.08]"
+                        }`}
+                      >
+                        »
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
             </div>
           )}
         </>
