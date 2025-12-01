@@ -113,18 +113,43 @@ const ChatWidget = ({ messages, onSendMessage, isTyping, isConnected, streamingM
                 <MoreHorizontal size={16} />
               </button>
               {sessionMenuOpen && (
-                <div className="absolute right-0 mt-2 w-40 rounded-xl border border-white/10 bg-[#111827] text-xs text-white shadow-xl z-20">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSessionMenuOpen(false);
-                      onLoadPreviousSession();
-                    }}
-                    disabled={isLoadingSession}
-                    className="flex w-full items-center px-4 py-2.5 text-left hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed text-white"
-                  >
-                    Load previous session
-                  </button>
+                <div
+                  className="
+                    absolute right-0 mt-2
+                    w-[160px] min-h-[60px]
+                    rounded-xl
+                    border border-white/10
+                    bg-black/70
+                    before:absolute before:inset-0
+                    before:bg-white/15
+                    before:backdrop-blur-[94px]
+                    before:rounded-xl
+                    before:z-[-1]
+                    shadow-lg z-20
+                    flex flex-col p-1 gap-1
+                    overflow-hidden
+                  "
+                >
+                  {/* Blur effects BEHIND content */}
+                  <div className="absolute w-[80px] h-[80px] right-[-16px] top-[-16px] 
+                                  bg-cyan-400/10 blur-[40px] rounded-full pointer-events-none z-0"></div>
+
+                  {/* Menu Items - ABOVE blur */}
+                  <div className="relative z-10 flex flex-col gap-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSessionMenuOpen(false);
+                        onLoadPreviousSession();
+                      }}
+                      disabled={isLoadingSession}
+                      className="flex items-center gap-1 px-3 py-2 text-sm text-white rounded-lg
+                                transition-all duration-200 hover:bg-green-600/20 hover:text-[#13F584]
+                                disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Load previous session
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
