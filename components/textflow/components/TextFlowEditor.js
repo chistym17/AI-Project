@@ -1263,7 +1263,7 @@ function FlowContent({ assistantId }) {
           style={{ paddingBottom: componentDropdownOffset }}
         >
           <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-[2px] pointer-events-auto"
+            className="absolute inset-0 bg-transparent pointer-events-auto"
             onClick={() => setShowComponentModal(false)}
           />
 
