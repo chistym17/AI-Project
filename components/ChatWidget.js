@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, User } from 'lucide-react';
+import { Send, User, MoreHorizontal } from 'lucide-react';
 import Image from 'next/image';
 
 const ChatWidget = ({ messages, onSendMessage, isTyping, isConnected, streamingMessage, onStartNewSession, onLoadPreviousSession, currentSessionId, isLoadingSession = false, loadingSessionType = null }) => {
   const [inputMessage, setInputMessage] = useState('');
   const messagesEndRef = useRef(null);
+  const [sessionMenuOpen, setSessionMenuOpen] = useState(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -56,15 +57,15 @@ const ChatWidget = ({ messages, onSendMessage, isTyping, isConnected, streamingM
       <div className="flex flex-wrap items-center justify-between gap-4  px-6 py-4">
           <div className="flex items-center gap-4">
             <div className="relative flex items-center justify-center">
-              {/* Expanding Glow */}
-                <div className="
-                  absolute 
-                  w-[70px] 
-                  h-[70px] 
-                  rounded-full 
-                  bg-[radial-gradient(circle,rgba(19,245,132,0.6),rgba(19,245,132,0)_70%)]
-                  blur-[20px]
-                "></div>
+            {/* Expanding Glow (softened) */}
+              <div className="
+                absolute 
+                w-[60px] 
+                h-[60px] 
+                rounded-full 
+                bg-[radial-gradient(circle,rgba(19,245,132,0.35),rgba(19,245,132,0)_70%)]
+                blur-[12px]
+              "></div>
               
               {/* Outer Ring */}
                 <div className="absolute w-[60px] h-[60px] rounded-full border border-[#13F584]/40"></div>
@@ -100,28 +101,33 @@ const ChatWidget = ({ messages, onSendMessage, isTyping, isConnected, streamingM
           </div>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-3">
-          {/* Session Management Buttons */}
+          {/* Session Management Config (Load Previous in menu) */}
           {(isConnected || isLoadingSession) && (
-            <>
-           <div className="flex flex-row  gap-2 p-1 bg-white/5 rounded-lg w-max">
+            <div className="relative">
               <button
-                onClick={onStartNewSession}
-                disabled={isLoadingSession}
-                className="h-[30px] px-2 rounded-[8px] bg-[rgba(19,245,132,0.08)] flex items-center justify-center font-public-sans font-bold text-[13px] leading-[22px] text-[#9EFBCD] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                type="button"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-white/70 hover:bg-white/10 hover:text-white transition-colors"
+                onClick={() => setSessionMenuOpen((prev) => !prev)}
+                aria-label="Session options"
               >
-                Start New Session
+                <MoreHorizontal size={16} />
               </button>
-              <button
-                onClick={onLoadPreviousSession}
-                disabled={isLoadingSession}
-                className="h-[30px] w-[110px] px-2 flex items-center justify-center  text-white font-public-sans font-bold text-[13px] leading-[22px] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Load Previous
-              </button>
-
+              {sessionMenuOpen && (
+                <div className="absolute right-0 mt-2 w-40 rounded-xl border border-white/10 bg-[#111827] text-xs text-white shadow-xl z-20">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSessionMenuOpen(false);
+                      onLoadPreviousSession();
+                    }}
+                    disabled={isLoadingSession}
+                    className="flex w-full items-center px-4 py-2.5 text-left hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed text-white"
+                  >
+                    Load previous session
+                  </button>
+                </div>
+              )}
             </div>
-
-            </>
           )}
         </div>
       </div>
@@ -231,14 +237,14 @@ const ChatWidget = ({ messages, onSendMessage, isTyping, isConnected, streamingM
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               placeholder={isConnected ? "Ask anything" : "Connecting to server..."}
-              className="w-full pl-3 pr-16 h-16 rounded-[66px] border-0 bg-white/[0.04] text-white placeholder:text-[#919EAB] focus:outline-none disabled:opacity-50 text-xs"
+              className="w-full pl-3 pr-14 h-12 rounded-[66px] border-0 bg-white/[0.04] text-white placeholder:text-[#919EAB] focus:outline-none disabled:opacity-50 text-xs"
               style={{ fontFamily: 'Public Sans, sans-serif', fontSize: '12px', lineHeight: '1.5714285714285714em' }}
               disabled={!isConnected || isTyping || streamingMessage}
             />
             <button
               type="submit"
               disabled={!inputMessage.trim() || isTyping || !isConnected || streamingMessage}
-              className="absolute right-1.5 h-12 px-4 rounded-[99px] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center font-medium"
+              className="absolute right-1.5 h-10 px-3 rounded-[99px] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center font-medium"
               style={{ 
                 fontFamily: 'Public Sans, sans-serif', 
                 fontSize: '12px', 

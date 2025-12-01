@@ -640,7 +640,7 @@ const AssistantList = ({ className = "" }) => {
   return (
     <div className={`flex h-full w-full flex-col rounded-3xl border border-white/10 bg-white/5 p-5  backdrop-blur-xl ${className}`}>
       <div className="flex items-center gap-3 pl-2">
-        <h3 className="text-lg font-semibold text-white">Agent List</h3>
+        <h3 className="text-sm font-medium text-white">Agent List</h3>
       </div>
       <div className="relative mt-4">
         <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={18} />
@@ -648,7 +648,7 @@ const AssistantList = ({ className = "" }) => {
           value={assistantSearch}
           onChange={(e) => setAssistantSearch(e.target.value)}
           placeholder="Search agents..."
-          className="w-full h-55  rounded-[8px]  border-2 border-[rgba(145,158,171,0.2)] bg-transparent py-2.5 pl-11 pr-4 text-sm text-white placeholder:text-white/40 focus:border-emerald-400/40 focus:outline-none focus:ring-2 focus:ring-emerald-400/30"
+          className="w-full h-55 rounded-[8px] border-2 border-[rgba(145,158,171,0.2)] bg-transparent py-1.5 pl-10 pr-3 text-xs text-white placeholder:text-white/40 focus:border-emerald-400/40 focus:outline-none focus:ring-2 focus:ring-emerald-400/30"
           disabled={loadingAssistant}
         />
       </div>
@@ -1109,7 +1109,7 @@ const PanelTabs = ({ entries, className = "" }) => {
         <div className="flex h-full flex-col">
           <main className="flex h-full flex-1 flex-col overflow-hidden items-center justify-center p-6 lg:px-[120px] lg:py-[60px]">
             {/* Parent Container with margins (matching ChatInterface design) */}
-            <div className="flex flex-1 min-h-0 w-full max-w-[1800px] max-h-[900px] flex-col gap-5 overflow-hidden lg:flex-row lg:items-stretch">
+            <div className="flex flex-1 min-h-0 w-full max-w-[1800px] max-h-[900px] flex-col gap-5 overflow-hidden lg:flex-row lg:items-stretch -mt-4 lg:-mt-6">
               <div className="flex min-h-0 w-full flex-shrink-0 flex-col space-y-4 lg:h-full lg:max-w-[280px] lg:max-h-full">
                 <div className="min-h-0 lg:flex-[0.50] lg:overflow-hidden">
                   <AssistantList className="h-full min-h-0" />
@@ -1125,14 +1125,14 @@ const PanelTabs = ({ entries, className = "" }) => {
                     <div className="flex items-center gap-4">
                       <div className="relative flex items-center justify-center">
 
-                        {/* Expanding Glow */}
+                        {/* Expanding Glow (softened) */}
                         <div className="
                           absolute 
-                          w-[70px] 
-                          h-[70px] 
+                          w-[60px] 
+                          h-[60px] 
                           rounded-full 
-                          bg-[radial-gradient(circle,rgba(19,245,132,0.6),rgba(19,245,132,0)_70%)]
-                          blur-[20px]
+                          bg-[radial-gradient(circle,rgba(19,245,132,0.35),rgba(19,245,132,0)_70%)]
+                          blur-[12px]
                         "></div>
 
                         {/* Outer Ring */}
@@ -1164,8 +1164,7 @@ const PanelTabs = ({ entries, className = "" }) => {
                     </div>
 
                       <div>
-                        <h2 className="text-lg font-semibold text-white">AI Assistance</h2>
-                
+                        <h2 className="text-sm font-medium text-white">AI Assistance</h2>
                       </div>
                     </div>
                     <div className="flex flex-wrap items-center justify-end gap-3">
