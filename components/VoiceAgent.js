@@ -647,7 +647,7 @@ const AssistantList = ({ className = "" }) => {
         <input
           value={assistantSearch}
           onChange={(e) => setAssistantSearch(e.target.value)}
-          placeholder="Search contacts..."
+          placeholder="Search agents..."
           className="w-full h-55  rounded-[8px]  border-2 border-[rgba(145,158,171,0.2)] bg-transparent py-2.5 pl-11 pr-4 text-sm text-white placeholder:text-white/40 focus:border-emerald-400/40 focus:outline-none focus:ring-2 focus:ring-emerald-400/30"
           disabled={loadingAssistant}
         />
@@ -667,6 +667,9 @@ const AssistantList = ({ className = "" }) => {
           <div className="flex-1 space-y-2 overflow-y-auto pr-1 min-h-0 custom-scrollbar">
             {filteredAssistants.map((assistant) => {
               const isActive = assistantId === assistant.id;
+              const rawName = assistant.name || "Untitled Assistant";
+              const displayName =
+                rawName.length > 12 ? `${rawName.slice(0, 15)}...` : rawName;
               return (
                 <button
                   key={assistant.id}
@@ -687,12 +690,12 @@ const AssistantList = ({ className = "" }) => {
 
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium text-white truncate">
-                        {assistant.name || "Untitled Assistant"}
+                        {displayName}
                       </div>
                     </div>
                   </div>
                   <div
-                className={`relative flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full border-2 border-white/20 box-border transition-all`}
+                className={`relative ml-3 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full border-2 border-white/20 box-border transition-all`}
                 aria-hidden="true"
               >
                 {isActive && (
@@ -1221,123 +1224,7 @@ const PanelTabs = ({ entries, className = "" }) => {
                     )}
                   </div>
 
-                  <div className="flex-shrink-0 px-3 py-0.5   ">
-                 <div className="grid w-full gap-2 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
-
-                    <div
-                      className="
-                        box-border
-                        flex flex-col items-start
-                        p-4 gap-[5px]
-                        w-full max-w-sm
-                        h-auto min-h-[148px]
-                        bg-white/5
-                        rounded-[16px]
-                      "
-                    >
-
-                     <div className="flex flex-row items-start gap-[9px] w-full h-auto">
-                    {/* Icon */}
-                    <div className="flex items-center justify-center w-[48px] h-[48px] ">
-                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect width="48" height="48" rx="24" fill="white" fill-opacity="0.04"/>
-                      <rect x="0.6" y="0.6" width="46.8" height="46.8" rx="23.4" stroke="#919EAB" stroke-opacity="0.32" stroke-width="1.2"/>
-                      <path d="M21.9216 34.7988C22.1323 35.1636 22.4353 35.4666 22.8001 35.6772C23.1649 35.8878 23.5788 35.9987 24 35.9987C24.4213 35.9987 24.8351 35.8878 25.2 35.6772C25.5648 35.4666 25.8678 35.1636 26.0784 34.7988" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M13.5141 27.9912C13.3573 28.163 13.2539 28.3767 13.2163 28.6062C13.1788 28.8358 13.2087 29.0713 13.3025 29.2841C13.3964 29.4969 13.55 29.6779 13.7448 29.805C13.9396 29.9321 14.1671 29.9998 14.3997 30H33.5997C33.8322 30.0001 34.0598 29.9326 34.2547 29.8057C34.4496 29.6789 34.6035 29.4981 34.6976 29.2854C34.7916 29.0727 34.8219 28.8373 34.7846 28.6077C34.7474 28.3782 34.6442 28.1644 34.4877 27.9924C32.8917 26.3472 31.1997 24.5988 31.1997 19.2C31.1997 17.2904 30.4411 15.4591 29.0909 14.1088C27.7406 12.7586 25.9092 12 23.9997 12C22.0901 12 20.2588 12.7586 18.9085 14.1088C17.5583 15.4591 16.7997 17.2904 16.7997 19.2C16.7997 24.5988 15.1065 26.3472 13.5141 27.9912Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-
-                      {/* Notification label */}
-                      <div className="absolute left-[24px] top-[7px] w-[16px] h-[16px] bg-[#FF5630] border border-white rounded-full flex justify-center items-center hidden"></div>
-                    </div>
-
-                    {/* Text stack */}
-                    <div className="flex flex-col items-start gap-1 w-full h-auto">
-                      <div className="font-public-sans font-semibold text-[16px] leading-[24px] text-white">
-                        Overview
-                      </div>
-                      <div className="font-public-sans font-normal text-[14px] leading-[22px] text-white">
-                        Blumen Café is a contemporary coffeehouse located in the heart of Riyadh...
-                      </div>
-                    </div>
-                  </div>
-                    </div>
-
-                     <div
-                      className="
-                        box-border
-                        flex flex-col items-start
-                        p-4 gap-[9px]
-                        w-full max-w-sm
-                        h-auto min-h-[148px]
-                        bg-white/5
-                        rounded-[16px]
-                      "
-                    >
-                     <div className="flex flex-row items-start gap-[9px] w-full h-auto">
-                    {/* Icon */}
-                    <div className="flex items-center justify-center w-[48px] h-[48px] ">
-                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect width="48" height="48" rx="24" fill="white" fill-opacity="0.04"/>
-                      <rect x="0.6" y="0.6" width="46.8" height="46.8" rx="23.4" stroke="#919EAB" stroke-opacity="0.32" stroke-width="1.2"/>
-                      <path d="M21.9216 34.7988C22.1323 35.1636 22.4353 35.4666 22.8001 35.6772C23.1649 35.8878 23.5788 35.9987 24 35.9987C24.4213 35.9987 24.8351 35.8878 25.2 35.6772C25.5648 35.4666 25.8678 35.1636 26.0784 34.7988" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M13.5141 27.9912C13.3573 28.163 13.2539 28.3767 13.2163 28.6062C13.1788 28.8358 13.2087 29.0713 13.3025 29.2841C13.3964 29.4969 13.55 29.6779 13.7448 29.805C13.9396 29.9321 14.1671 29.9998 14.3997 30H33.5997C33.8322 30.0001 34.0598 29.9326 34.2547 29.8057C34.4496 29.6789 34.6035 29.4981 34.6976 29.2854C34.7916 29.0727 34.8219 28.8373 34.7846 28.6077C34.7474 28.3782 34.6442 28.1644 34.4877 27.9924C32.8917 26.3472 31.1997 24.5988 31.1997 19.2C31.1997 17.2904 30.4411 15.4591 29.0909 14.1088C27.7406 12.7586 25.9092 12 23.9997 12C22.0901 12 20.2588 12.7586 18.9085 14.1088C17.5583 15.4591 16.7997 17.2904 16.7997 19.2C16.7997 24.5988 15.1065 26.3472 13.5141 27.9912Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-
-                      {/* Notification label */}
-                      <div className="absolute left-[24px] top-[7px] w-[16px] h-[16px] bg-[#FF5630] border border-white rounded-full flex justify-center items-center hidden"></div>
-                    </div>
-
-                    {/* Text stack */}
-                    <div className="flex flex-col items-start gap-1 w-full h-auto">
-                      <div className="font-public-sans font-semibold text-[16px] leading-[24px] text-white">
-                        Overview
-                      </div>
-                      <div className="font-public-sans font-normal text-[14px] leading-[22px] text-white">
-                        Blumen Café is a contemporary coffeehouse located in the heart of Riyadh...
-                      </div>
-                    </div>
-                  </div>
-                    </div>
-
-                     <div
-                      className="
-                        box-border
-                        flex flex-col items-start
-                        p-4 gap-[9px]
-                        w-full max-w-sm
-                        h-auto min-h-[148px]
-                        bg-white/5
-                        rounded-[16px]
-                      "
-                    >
-                     <div className="flex flex-row items-start gap-[9px] w-full h-auto">
-                    {/* Icon */}
-                    <div className="flex items-center justify-center w-[48px] h-[48px] ">
-                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect width="48" height="48" rx="24" fill="white" fill-opacity="0.04"/>
-                      <rect x="0.6" y="0.6" width="46.8" height="46.8" rx="23.4" stroke="#919EAB" stroke-opacity="0.32" stroke-width="1.2"/>
-                      <path d="M21.9216 34.7988C22.1323 35.1636 22.4353 35.4666 22.8001 35.6772C23.1649 35.8878 23.5788 35.9987 24 35.9987C24.4213 35.9987 24.8351 35.8878 25.2 35.6772C25.5648 35.4666 25.8678 35.1636 26.0784 34.7988" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M13.5141 27.9912C13.3573 28.163 13.2539 28.3767 13.2163 28.6062C13.1788 28.8358 13.2087 29.0713 13.3025 29.2841C13.3964 29.4969 13.55 29.6779 13.7448 29.805C13.9396 29.9321 14.1671 29.9998 14.3997 30H33.5997C33.8322 30.0001 34.0598 29.9326 34.2547 29.8057C34.4496 29.6789 34.6035 29.4981 34.6976 29.2854C34.7916 29.0727 34.8219 28.8373 34.7846 28.6077C34.7474 28.3782 34.6442 28.1644 34.4877 27.9924C32.8917 26.3472 31.1997 24.5988 31.1997 19.2C31.1997 17.2904 30.4411 15.4591 29.0909 14.1088C27.7406 12.7586 25.9092 12 23.9997 12C22.0901 12 20.2588 12.7586 18.9085 14.1088C17.5583 15.4591 16.7997 17.2904 16.7997 19.2C16.7997 24.5988 15.1065 26.3472 13.5141 27.9912Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-
-                      {/* Notification label */}
-                      <div className="absolute left-[24px] top-[7px] w-[16px] h-[16px] bg-[#FF5630] border border-white rounded-full flex justify-center items-center hidden"></div>
-                    </div>
-
-                    {/* Text stack */}
-                    <div className="flex flex-col items-start gap-1 w-full h-auto">
-                      <div className="font-public-sans font-semibold text-[16px] leading-[24px] text-white">
-                        Overview
-                      </div>
-                      <div className="font-public-sans font-normal text-[14px] leading-[22px] text-white">
-                        Blumen Café is a contemporary coffeehouse located in the heart of Riyadh...
-                      </div>
-                    </div>
-                  </div>
-                    </div>
-                    
-                    
-                    </div></div>
+                  {/* Removed unnecessary Blumen Café overview cards */}
  
                  <div className="flex-shrink-0  px-3 py-3">
                  
@@ -1349,44 +1236,8 @@ const PanelTabs = ({ entries, className = "" }) => {
                       bg-white/5 rounded-[16px]
                     "
                   >
-
-                    <div className="flex items-center gap-10 md:gap-[88px]">
-
-                      {/* Play Button - Starts recording if not already recording */}
-                      <div className="flex items-center p-2 gap-4 w-12 h-12 bg-white/4 rounded-[44px]">
-                        <button
-                            type="button"
-                            onClick={() => {
-                              if (!isRec) toggleRec(); // start recording
-                              else toggleRec();        // stop recording
-                            }}
-                            className="
-                              flex items-center justify-center
-                              px-2 gap-[5.33px] w-8 h-8
-                              bg-[rgba(19,245,132,0.12)]
-                              border border-[rgba(19,245,132,0.32)]
-                              rounded-[66px]
-                              hover:bg-emerald-400/20
-                              transition-all duration-200
-                            "
-                          >
-                            {/* MIDDLE CIRCLE (white 4% opacity, radius = 19.8276) */}
-                                                      <span
-                                                        className="
-                                                          absolute w-[50px] h-[50px]
-                                                          rounded-full bg-white/5 
-                                                          -z-10
-                                                        "
-                                                      />
-                            {isRec ? (
-                              <Pause size={16} />
-                            ) : (
-                              <Play size={16} />
-                            )}
-                          </button>
-
-                      </div>
-                      {/* Voice Button - Toggles recording (existing functionality) */}
+                    <div className="flex items-center justify-center">
+                      {/* Voice Button - primary microphone control */}
                       <div className="flex flex-col items-center gap-[13px]">
                         <div className="flex items-center p-[5.17241px] gap-[10.34px] w-[50px] h-[50px] bg-white/4 rounded-[28.4483px]">
                           <div className="flex items-center p-[5.17241px] gap-[10.34px] w-[39.66px] h-[39.66px] bg-white/4 rounded-[28.4483px]">
@@ -1462,28 +1313,6 @@ const PanelTabs = ({ entries, className = "" }) => {
                 
                       <span>{isRec ? "Listening…" : "Push to talk"}</span>
                     </div>
-                      </div>
-                      {/* Stop Button - Stops recording if currently recording */}
-                      <div className="flex items-center p-2 gap-4 w-12 h-12 bg-white/4 rounded-[44px]">
-                        <button
-                  type="button"
-                  onClick={() => { if (isRec) toggleRec(); }} 
-                  disabled={!isRec}
-                  className={`
-                   
-                    ${isRec ? "" : "opacity-40 cursor-not-allowed"}
-                  `}
-                >
-              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="48" height="48" rx="24" fill="white" fill-opacity="0.04"/>
-                <rect x="8" y="8" width="32" height="32" rx="16" fill="#FF7676" fill-opacity="0.12"/>
-                <rect x="8.33333" y="8.33333" width="31.3333" height="31.3333" rx="15.6667" stroke="#FF7676" stroke-opacity="0.32" stroke-width="0.666667"/>
-                <path d="M20.998 18.8127L29.4776 27.2923C29.7843 27.599 29.9698 28.0017 29.9935 28.4117C30.0171 28.8218 29.8768 29.2057 29.6036 29.479L29.2601 29.8224C28.9868 30.0957 28.6029 30.236 28.1929 30.2123C27.7828 30.1887 27.3801 30.0032 27.0734 29.6965L18.5938 21.2169C18.2871 20.9102 18.1016 20.5075 18.078 20.0974C18.0543 19.6874 18.1946 19.3035 18.4679 19.0302L18.8113 18.6867C19.0846 18.4135 19.4685 18.2732 19.8786 18.2968C20.2886 18.3205 20.6913 18.506 20.998 18.8127Z" fill="#FF7676"/>
-                <path d="M29.37 18.4757L29.7134 18.8191C29.9867 19.0924 30.1269 19.4763 30.1033 19.8864C30.0797 20.2964 29.8941 20.6991 29.5874 21.0058L21.1078 29.4854C20.8011 29.7921 20.3985 29.9776 19.9884 30.0013C19.5783 30.0249 19.1944 29.8846 18.9212 29.6114L18.5777 29.2679C18.3044 28.9947 18.1642 28.6108 18.1878 28.2007C18.2114 27.7906 18.397 27.3879 18.7037 27.0813L27.1833 18.6016C27.49 18.295 27.8926 18.1094 28.3027 18.0858C28.7128 18.0622 29.0967 18.2024 29.37 18.4757Z" fill="#FF7676"/>
-              </svg>
-
-                </button>
-
                       </div>
                     </div>
                     
