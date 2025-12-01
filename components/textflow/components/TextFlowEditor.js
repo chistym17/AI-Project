@@ -1211,8 +1211,8 @@ function FlowContent({ assistantId }) {
             onClick={() => tf.setSelection(null)}
           />
           
-          {/* Config Panel - Scrollable content */}
-          <div className="relative z-50 w-full max-w-2xl h-[90vh] flex flex-col">
+          {/* Config Panel - Scrollable content (auto height, clamped by viewport) */}
+          <div className="relative z-50 w-full max-w-2xl max-h-[90vh] flex flex-col">
             <ConfigPanel assistantId={assistantId} />
           </div>
         </div>
