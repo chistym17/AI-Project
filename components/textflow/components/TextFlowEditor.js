@@ -157,7 +157,7 @@ function FlowContent({ assistantId }) {
   const resizeStartY = useRef(0);
   const resizeStartHeight = useRef(0);
 
-  const componentDropdownOffset = consoleCollapsed ? 140 : Math.min(consoleHeight + 100, 520);
+  const componentDropdownOffset = consoleCollapsed ? 140 : Math.min(consoleHeight + 90, 520);
   const chatbotBottomOffset = consoleCollapsed ? 24 : consoleHeight + 10;
   const filteredComponents = useMemo(() => {
     const query = componentSearch.trim().toLowerCase();
@@ -1015,7 +1015,7 @@ function FlowContent({ assistantId }) {
         <div 
           className="absolute left-1/2 -translate-x-1/2 z-20 flex items-center"
           style={{
-            bottom: consoleCollapsed ? '60px' : `${consoleHeight + 20}px`,
+            bottom: consoleCollapsed ? '60px' : `${consoleHeight + 10}px`,
             background: 'rgba(255, 255, 255, 0.04)',
             backdropFilter: 'blur(16px)',
             WebkitBackdropFilter: 'blur(16px)',
