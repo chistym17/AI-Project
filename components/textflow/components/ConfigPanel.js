@@ -1094,7 +1094,7 @@ export default function ConfigPanel({ assistantId }) {
   const renderHttpNodeConfig = () => {
     return (
       <div className="space-y-4">
-        {/* HTTP Mode Selector - FIXED */}
+        {/* HTTP Mode Selector - tab style like header tabs */}
         <div 
           className="rounded-xl p-4 border backdrop-blur"
           style={{
@@ -1102,42 +1102,43 @@ export default function ConfigPanel({ assistantId }) {
             borderColor: 'rgba(255, 255, 255, 0.12)'
           }}
         >
-          <div className="flex items-center gap-2 mb-3">
-            <Globe className="w-4 h-4 text-emerald-400" />
-            <span className="text-xs font-semibold text-white">HTTP Configuration Mode</span>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Globe className="w-4 h-4 text-emerald-400" />
+              <span className="text-xs font-semibold text-white">HTTP Configuration Mode</span>
+            </div>
             {/* DEBUG INFO (remove after testing) */}
-            <span className="ml-auto text-[10px] text-gray-500 font-mono">
+            <span className="ml-4 text-[10px] text-gray-500 font-mono">
               Mode: {httpMode} | Connector: {selectedConnector ? 'YES' : 'NO'} | Loaded: {connectorLoaded ? 'YES' : 'NO'}
             </span>
           </div>
-          <div 
-            className="flex gap-2 rounded-lg p-1"
-            style={{
-              background: 'rgba(255, 255, 255, 0.08)'
-            }}
-          >
-            <button
-              onClick={handleSwitchToConnector}
-              className={`flex-1 px-3 py-2 text-xs font-medium rounded-md transition-all ${
-                httpMode === 'connector'
-                  ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg'
-                  : 'text-gray-400 hover:text-gray-300'
-              }`}
-            >
-              <Plug className="w-3 h-3 inline mr-1" />
-              Use Connector
-            </button>
+
+          {/* Tabs */}
+          <div className="flex gap-6 border-b border-white/10 mb-2">
             <button
               onClick={handleSwitchToTraditional}
-              className={`flex-1 px-3 py-2 text-xs font-medium rounded-md transition-all ${
-                httpMode === 'traditional'
-                  ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg'
-                  : 'text-gray-400 hover:text-gray-300'
+              className={`px-0 py-2 text-[11px] font-medium transition-all ${
+                httpMode === 'traditional' 
+                  ? 'text-[#13F584] border-b-2 border-[#13F584]' 
+                  : 'text-gray-400 hover:text-gray-300 border-b-2 border-transparent'
               }`}
+              style={{ height: '28px' }}
             >
               Traditional
             </button>
+            <button
+              onClick={handleSwitchToConnector}
+              className={`px-0 py-2 text-[11px] font-medium transition-all ${
+                httpMode === 'connector' 
+                  ? 'text-[#13F584] border-b-2 border-[#13F584]' 
+                  : 'text-gray-400 hover:text-gray-300 border-b-2 border-transparent'
+              }`}
+              style={{ height: '28px' }}
+            >
+              Use Connector
+            </button>
           </div>
+
           <div className="mt-2 text-xs text-gray-500">
             {httpMode === 'connector' 
               ? '🔌 Using API connector with pre-configured endpoints'
