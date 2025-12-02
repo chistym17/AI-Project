@@ -157,7 +157,7 @@ function FlowContent({ assistantId }) {
   const resizeStartY = useRef(0);
   const resizeStartHeight = useRef(0);
 
-  const componentDropdownOffset = consoleCollapsed ? 140 : Math.min(consoleHeight + 160, 520);
+  const componentDropdownOffset = consoleCollapsed ? 140 : Math.min(consoleHeight + 100, 520);
   const chatbotBottomOffset = consoleCollapsed ? 24 : consoleHeight + 10;
   const filteredComponents = useMemo(() => {
     const query = componentSearch.trim().toLowerCase();
@@ -1225,6 +1225,7 @@ function FlowContent({ assistantId }) {
           onClose={() => setShowTriggerManager(false)}
           onOpenCreateCredential={() => setShowCreateCredentialModal(true)}
           credentialsRefreshKey={credentialRefreshKey}
+          bottomOffset={componentDropdownOffset}
         />
       )}
       <CreateCredentialModal
@@ -1243,6 +1244,7 @@ function FlowContent({ assistantId }) {
           onSelectTemplate={handleSelectTemplate}
           onClose={() => setShowTemplateGallery(false)}
           onGetCurrentFlow={() => ({ nodes, edges })}
+          bottomOffset={componentDropdownOffset}
         />
       )}
 
@@ -1254,6 +1256,7 @@ function FlowContent({ assistantId }) {
           onClose={() => setShowComponentLibrary(false)}
           onOpenCreateModal={() => setShowCreateComponentModal(true)}
           refreshTrigger={componentRefreshTrigger}
+          bottomOffset={componentDropdownOffset}
         />
       )}
 
@@ -1275,6 +1278,7 @@ function FlowContent({ assistantId }) {
           assistantId={assistantId}
           onSelectConnector={handleSelectConnector}
           onClose={() => setShowConnectorPanel(false)}
+          bottomOffset={componentDropdownOffset}
         />
       )}
 
@@ -1290,17 +1294,16 @@ function FlowContent({ assistantId }) {
           />
 
           <div
-            className="relative pointer-events-auto w-full max-w-[440px] px-4"
+            className="relative pointer-events-auto w-full max-w-xl px-4"
           >
             <div
-              className="rounded-[24px]"
+              className="rounded-[24px] h-[50vh] max-h-[50vh]"
               style={{
                 background: 'rgba(255, 255, 255, 0.04)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.12)',
                 boxShadow: '0 20px 80px rgba(0, 0, 0, 0.45)',
-                height: '450px',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -1310,21 +1313,10 @@ function FlowContent({ assistantId }) {
               {/* Header Section */}
               <div
                 className="w-full flex items-center justify-between"
-                style={{ padding: '16px', gap: '32px' }}
+                style={{ padding: '20px 16px 16px 16px', gap: '32px' }}
               >
                 <div className="flex-1">
-                  <p 
-                    className="text-white/90"
-                    style={{
-                      fontFamily: 'Public Sans, sans-serif',
-                      fontWeight: 500,
-                      fontSize: '14px',
-                      lineHeight: '1.4em',
-                      letterSpacing: '0.02em'
-                    }}
-                  >
-                    Components
-                  </p>
+                  <h2 className="text-base font-semibold text-white/90 tracking-tight">Components</h2>
                 </div>
               </div>
 
@@ -1370,7 +1362,7 @@ function FlowContent({ assistantId }) {
                 className="component-scroll w-full overflow-y-auto"
                 style={{
                   padding: '0px 16px 12px 16px',
-                  gap: '16px',
+                  gap: '24px',
                   display: 'flex',
                   flexDirection: 'column',
                   flex: 1
