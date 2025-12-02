@@ -915,16 +915,16 @@ function FlowContent({ assistantId }) {
               style={{ opacity: 0.2 }}
             />
             <Controls 
-              className="!bg-white/8 !border-white/20 !rounded-xl !shadow-2xl !backdrop-blur-xl [&_button]:!bg-transparent [&_button]:!border-white/20 [&_button:hover]:!bg-white/10 [&_button]:!text-white [&_svg]:!text-white [&_svg_path]:!stroke-white [&_svg_path]:!fill-white"
+              className="!bg-white/8 !border-0 !rounded-xl !shadow-2xl !backdrop-blur-xl [&_button]:!bg-transparent [&_button]:!border-0 [&_button:hover]:!bg-white/10 [&_button]:!text-white [&_svg]:!text-white [&_svg_path]:!stroke-white [&_svg_path]:!fill-white"
               showInteractive={false}
               showFitView={false}
               style={{ 
                 backgroundColor: 'rgba(255, 255, 255, 0.08)',
                 backdropFilter: 'blur(16px)',
                 WebkitBackdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
+                border: 'none',
                 bottom: '16px',
-                left: '16px',
+                left: '2px',
                 right: 'auto',
                 top: 'auto'
               }}
@@ -936,9 +936,23 @@ function FlowContent({ assistantId }) {
               }
               .react-flow__controls button {
                 color: #FFFFFF !important;
+                border: none !important;
+                border-top: none !important;
+                border-bottom: none !important;
+                border-left: none !important;
+                border-right: none !important;
               }
               .react-flow__controls button svg {
                 color: #FFFFFF !important;
+              }
+              .react-flow__controls button + button {
+                border-top: none !important;
+              }
+              .react-flow__controls {
+                border: none !important;
+              }
+              .react-flow__attribution {
+                display: none !important;
               }
             `}} />
           </ReactFlow>
@@ -1023,7 +1037,7 @@ function FlowContent({ assistantId }) {
             <img src={MINIBAR_ICONS.components} alt="Components" className="w-10 h-10" />
           </button>
           {/* Tooltip */}
-          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
             style={{
               background: 'rgba(255, 255, 255, 0.08)',
               backdropFilter: 'blur(12px)',
@@ -1045,7 +1059,7 @@ function FlowContent({ assistantId }) {
             <img src={MINIBAR_ICONS.templates} alt="Templates" className="w-10 h-10" />
           </button>
           {/* Tooltip */}
-          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
             style={{
               background: 'rgba(255, 255, 255, 0.08)',
               backdropFilter: 'blur(12px)',
@@ -1067,7 +1081,7 @@ function FlowContent({ assistantId }) {
             <img src={MINIBAR_ICONS.subflows} alt="Subflows" className="w-10 h-10" />
           </button>
           {/* Tooltip */}
-          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
             style={{
               background: 'rgba(255, 255, 255, 0.08)',
               backdropFilter: 'blur(12px)',
@@ -1089,7 +1103,7 @@ function FlowContent({ assistantId }) {
             <img src={MINIBAR_ICONS.connectors} alt="Connectors" className="w-10 h-10" />
           </button>
           {/* Tooltip */}
-          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
             style={{
               background: 'rgba(255, 255, 255, 0.08)',
               backdropFilter: 'blur(12px)',
@@ -1111,7 +1125,7 @@ function FlowContent({ assistantId }) {
             <img src={MINIBAR_ICONS.triggers} alt="Triggers & Credentials" className="w-10 h-10" />
           </button>
           {/* Tooltip */}
-          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
             style={{
               background: 'rgba(255, 255, 255, 0.08)',
               backdropFilter: 'blur(12px)',
@@ -1133,7 +1147,7 @@ function FlowContent({ assistantId }) {
             <img src={MINIBAR_ICONS.console} alt="Console" className="w-10 h-10" />
           </button>
           {/* Tooltip */}
-          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
             style={{
               background: 'rgba(255, 255, 255, 0.08)',
               backdropFilter: 'blur(12px)',
@@ -1162,7 +1176,7 @@ function FlowContent({ assistantId }) {
             />
           </button>
           {/* Tooltip */}
-          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-300 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
             style={{
               background: 'rgba(255, 255, 255, 0.08)',
               backdropFilter: 'blur(12px)',
