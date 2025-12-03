@@ -1332,7 +1332,7 @@ function FlowContent({ assistantId }) {
                 <div className="flex-1">
                   <h2 className="text-base font-semibold text-white/90 tracking-tight">Components</h2>
                 </div>
-              </div>
+                </div>
 
               {/* Search Section */}
               <div
@@ -1369,10 +1369,10 @@ function FlowContent({ assistantId }) {
                     }}
                   />
                 </div>
-              </div>
+                </div>
 
               {/* Component List */}
-              <div
+                <div
                 className="component-scroll w-full overflow-y-auto"
                 style={{
                   padding: '0px 16px 12px 16px',
@@ -1381,7 +1381,7 @@ function FlowContent({ assistantId }) {
                   flexDirection: 'column',
                   flex: 1
                 }}
-              >
+                >
                   {filteredComponents.length === 0 && (
                   <div 
                     className="rounded-2xl border border-dashed bg-white/5 p-5 text-center text-white/60"

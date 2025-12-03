@@ -757,9 +757,9 @@ export default function ConnectorPanel({ assistantId, onSelectConnector, onClose
             >
               <div className="flex flex-col gap-3 p-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-white/90">
-                    {deleteModal.isOwner ? 'Delete Connector' : 'Remove Connector'}
-                  </h3>
+                    <h3 className="text-sm font-semibold text-white/90">
+                      {deleteModal.isOwner ? 'Delete Connector' : 'Remove Connector'}
+                    </h3>
                   <button
                     onClick={() => {
                       if (!deleteLoading) {
@@ -773,20 +773,20 @@ export default function ConnectorPanel({ assistantId, onSelectConnector, onClose
                   </button>
                 </div>
                 <p className="text-[11px] text-white/60">
-                  {deleteModal.isOwner ? (
-                    <>
+                    {deleteModal.isOwner ? (
+                      <>
                       Are you sure you want to delete{" "}
                       <span className="text-white/90 font-semibold">"{deleteModal.connectorName}"</span>?
                       This action cannot be undone.
-                    </>
-                  ) : (
-                    <>
+                      </>
+                    ) : (
+                      <>
                       Are you sure you want to remove{" "}
                       <span className="text-white/90 font-semibold">"{deleteModal.connectorName}"</span>?
                       You can add it again from Discover later.
-                    </>
-                  )}
-                </p>
+                      </>
+                    )}
+                  </p>
                 {deleteError && (
                   <div className="bg-red-950/30 border border-red-800/50 rounded-lg p-2 flex items-start gap-2">
                     <AlertCircle className="w-3.5 h-3.5 text-red-400 flex-shrink-0 mt-0.5" />
