@@ -351,7 +351,7 @@ const ChatInterface = () => {
                  {isMobile && (
                   <div className="flex justify-between items-center ">
                     <h1 className="text-lg font-bold text-white">
-                      AI Asistance 
+                      AI ChatAgent 
                     </h1>
       
                     <button
