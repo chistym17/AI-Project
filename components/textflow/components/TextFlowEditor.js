@@ -224,38 +224,52 @@ function FlowContent({ assistantId }) {
 
   // Console resize handlers
   const handleResizeStart = (e) => {
-    e.preventDefault();
-    setIsResizing(true);
-    resizeStartY.current = e.clientY;
-    resizeStartHeight.current = consoleHeight;
-    document.body.style.cursor = 'ns-resize';
-    document.body.style.userSelect = 'none';
+  e.preventDefault();
+  setIsResizing(true);
+
+  // Get starting Y position for mouse or touch
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  resizeStartY.current = clientY;
+  resizeStartHeight.current = consoleHeight;
+
+  document.body.style.cursor = 'ns-resize';
+  document.body.style.userSelect = 'none';
   };
 
 
+
   useEffect(() => {
-    if (!isResizing) return;
+  if (!isResizing) return;
 
-    const handleMouseMove = (e) => {
-      const delta = resizeStartY.current - e.clientY;
-      const newHeight = Math.max(150, Math.min(600, resizeStartHeight.current + delta));
-      setConsoleHeight(newHeight);
-    };
+  const handleMove = (e) => {
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const delta = resizeStartY.current - clientY;
+    const newHeight = Math.max(150, Math.min(600, resizeStartHeight.current + delta));
+    setConsoleHeight(newHeight);
+  };
 
-    const handleMouseUp = () => {
-      setIsResizing(false);
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-    };
+  const handleEnd = () => {
+    setIsResizing(false);
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+  // Mouse events
+  document.addEventListener('mousemove', handleMove);
+  document.addEventListener('mouseup', handleEnd);
 
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isResizing]);
+  // Touch events
+  document.addEventListener('touchmove', handleMove);
+  document.addEventListener('touchend', handleEnd);
+
+  return () => {
+    document.removeEventListener('mousemove', handleMove);
+    document.removeEventListener('mouseup', handleEnd);
+    document.removeEventListener('touchmove', handleMove);
+    document.removeEventListener('touchend', handleEnd);
+  };
+}, [isResizing]);
+
 
   // Load flow from backend
   useEffect(() => {
@@ -978,7 +992,7 @@ function FlowContent({ assistantId }) {
               style={{ opacity: 0.2 }}
             />
             <Controls 
-              className="!bg-white/8 !border-0 !rounded-xl !shadow-2xl !backdrop-blur-xl [&_button]:!bg-transparent [&_button]:!border-0 [&_button:hover]:!bg-white/10 [&_button]:!text-white [&_svg]:!text-white [&_svg_path]:!stroke-white [&_svg_path]:!fill-white"
+              className="!bg-white/8 !border-0 !rounded-xl !shadow-2xl !backdrop-blur-xl [&_button]:!bg-transparent [&_button]:!border-0 [&_button:hover]:!bg-white/10 [&_button]:!text-white [&_svg]:!text-white [&_svg_path]:!stroke-white [&_svg_path]:!fill-white sm:scale-100 scale-125"
               showInteractive={false}
               showFitView={false}
               style={{ 
@@ -986,7 +1000,7 @@ function FlowContent({ assistantId }) {
                 backdropFilter: 'blur(16px)',
                 WebkitBackdropFilter: 'blur(16px)',
                 border: 'none',
-                bottom: '16px',
+                bottom: window.innerWidth < 640 ? '70px' : '16px', // mobile 100px, desktop 16px
                 left: '2px',
                 right: 'auto',
                 top: 'auto'
@@ -1110,7 +1124,7 @@ function FlowContent({ assistantId }) {
         <div 
           className="absolute left-1/2 -translate-x-1/2 z-20 flex items-center"
           style={{
-            bottom: consoleCollapsed ? '60px' : `${consoleHeight + 10}px`,
+            bottom: consoleCollapsed ? '20px' : `${consoleHeight + 10}px`,
             background: 'rgba(255, 255, 255, 0.04)',
             backdropFilter: 'blur(16px)',
             WebkitBackdropFilter: 'blur(16px)',
@@ -1294,6 +1308,10 @@ function FlowContent({ assistantId }) {
           <div
             className="absolute top-0 left-0 right-0 h-2 cursor-ns-resize hover:bg-emerald-500/20 transition-colors group z-10"
             onMouseDown={(e) => {
+              e.stopPropagation();
+              handleResizeStart(e);
+            }}
+            onTouchStart={(e) => {
               e.stopPropagation();
               handleResizeStart(e);
             }}
