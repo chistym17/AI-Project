@@ -402,7 +402,7 @@ const HeroSection = () => {
                       </svg>
 
                   </div>
-                    </div>
+                    </div> 
 
                     {/* Card Text */}
                     <div className="text-white font-semibold text-[18px] text-center leading-[22px] mt-6">
